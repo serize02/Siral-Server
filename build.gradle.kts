@@ -40,4 +40,5 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
     testImplementation("io.ktor:ktor-server-test-host-jvm:2.3.11")
+    runtimeOnly("org.postgresql:postgresql:42.4.2")
 }
