@@ -116,8 +116,17 @@ class UserService(
             }
     }
 
-    override suspend fun deleteUser() = dbQuery {
-        TODO("Work here")
+    override suspend fun deleteUser(): Unit = dbQuery {
+        val date = LocalDate.now().minusMonths(6).toString()
+        val userId = Users
+            .select { Users.last eq date }
+            .map { Users.id.toString() }
+        userId.forEach { userId ->
+            Reservations
+                .deleteWhere { Reservations.user_id eq userId}
+            Users
+                .deleteWhere { Users.id eq userId }
+        }
     }
 
     override suspend fun getUserByUsername(username: String): User? = dbQuery {
