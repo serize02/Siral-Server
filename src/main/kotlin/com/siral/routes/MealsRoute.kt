@@ -41,7 +41,10 @@ fun Route.insertMeals(userService: UserService) {
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val request = call.receive<List<MealRequest>>()
             val meals = request.map {it.toMeal()}
-            userService.insertMeals(meals)
+            meals.forEach {
+                val meal = userService.getMeal(it)
+                    ?: userService.insertMeals(it)
+            }
             return@post call.respond(HttpStatusCode.OK, "Meals Added Successfully")
         }
     }

@@ -1,6 +1,7 @@
 package com.siral
 
 import com.siral.data.UserService
+import com.siral.events.events
 import com.siral.plugins.*
 import com.siral.security.token.JwtTokenService
 import com.siral.security.token.TokenConfig
@@ -30,6 +31,8 @@ fun Application.module() {
         expiresIn = 365L * 24L * 60L * 60L * 500L,
         secret = System.getenv("JWT_SECRET")
     )
+
+    events(userService)
 
     configureSerialization()
     configureSecurity(tokenConfig)
