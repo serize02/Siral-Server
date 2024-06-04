@@ -1,5 +1,6 @@
 package com.siral.data.user
 
+import java.time.LocalDate
 import java.util.*
 
 data class User(
@@ -7,5 +8,6 @@ data class User(
     val username: String,
     val role: String,
     val dinningHall: String,
-    val status: Boolean = true
+    val last: String = LocalDate.now().toString(),
+    val active: Boolean = true
 )

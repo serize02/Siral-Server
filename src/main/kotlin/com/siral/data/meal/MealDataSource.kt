@@ -7,5 +7,5 @@ interface MealDataSource {
     suspend fun getMealById(mealId: String): Meal?
     suspend fun getMeal(meal: Meal): Meal?
     suspend fun insertMeals(meal: Meal)
-
+    suspend fun activateMeals(days: Long)
 }

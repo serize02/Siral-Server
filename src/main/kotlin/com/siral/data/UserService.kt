@@ -17,7 +17,11 @@ import java.time.LocalDate
 
 class UserService(
     private val database: Database
-): AdminDataSource, UserDataSource, MealDataSource, ReservationDataSource, EventsDataSource {
+): AdminDataSource,
+    UserDataSource,
+    MealDataSource,
+    ReservationDataSource
+{
 
     object Admins: Table() {
         val username = varchar("username", 50)
@@ -29,7 +33,8 @@ class UserService(
         val username = varchar("username", 50)
         val role = varchar("role", 20)
         val dinningHall = varchar("dinning_hall", 100)
-        val status = bool("status")
+        val last = varchar("last", 16)
+        val active = bool("status")
         override val primaryKey = PrimaryKey(id)
     }
 
@@ -61,20 +66,6 @@ class UserService(
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
 
-    /**
-     * Events Data Source
-     */
-    override suspend fun activateMeals(days: Long): Unit = dbQuery {
-        val date = LocalDate.now().plusDays(days).toString()
-        Meals
-            .update({ Meals.date eq date }){
-                it[active] = true
-            }
-    }
-
-    /**
-     * AdminDataSource
-     */
     override suspend fun insertAdmin(userName: String): Unit = dbQuery {
         Admins
             .insert {
@@ -82,7 +73,6 @@ class UserService(
             }
     }
 
-//    TODO("Find the way to make this method private")
     override suspend fun verifyAdmin(userName: String): Boolean{
         val user = dbQuery {
             Admins
@@ -98,9 +88,6 @@ class UserService(
     }
 
 
-    /**
-     * UserDataSource
-     */
     override suspend fun insertUser(user: User): Unit = dbQuery {
         Users
             .insert{
@@ -108,8 +95,29 @@ class UserService(
                 it[username] = user.username
                 it[role] = user.role
                 it[dinningHall] = user.dinningHall
-                it[status] = user.status
+                it[last] = user.last
+                it[active] = user.active
             }
+    }
+
+    override suspend fun updateLast(userId: String): Unit = dbQuery {
+        Users
+            .update ({ Users.id eq userId }) {
+                it[last] = LocalDate.now().toString()
+                it[active] = true
+            }
+    }
+
+    override suspend fun updateActive(): Unit = dbQuery {
+        val date = LocalDate.now().minusMonths(2).toString()
+        Users
+            .update ({ Users.last eq date}){
+                it[active] = false
+            }
+    }
+
+    override suspend fun deleteUser() = dbQuery {
+        TODO("Work here")
     }
 
     override suspend fun getUserByUsername(username: String): User? = dbQuery {
@@ -121,7 +129,8 @@ class UserService(
                     username = it[Users.username],
                     role = it[Users.role],
                     dinningHall = it[Users.dinningHall],
-                    status = it[Users.status]
+                    last = it[Users.last],
+                    active = it[Users.active]
                 )
             }
             .singleOrNull()
@@ -136,15 +145,15 @@ class UserService(
                     username = it[Users.username],
                     role = it[Users.role],
                     dinningHall = it[Users.dinningHall],
-                    status = it[Users.status]
+                    last = it[Users.last],
+                    active = it[Users.active]
                 )
             }
             .singleOrNull()
     }
 
-    /**
-     * MealDataSource
-     */
+
+
     override suspend fun getMealsForTheNextDays(user: User): List<Meal> = dbQuery{
         val today = LocalDate.now().toString()
         return@dbQuery Meals
@@ -201,9 +210,16 @@ class UserService(
             }
     }
 
-    /**
-     * ReservationDataSource
-     */
+    override suspend fun activateMeals(days: Long): Unit = dbQuery {
+        val date = LocalDate.now().plusDays(days).toString()
+        Meals
+            .update({ Meals.date eq date }){
+                it[active] = true
+            }
+    }
+
+
+
     override suspend fun insertReservation(reservation: Reservation): Unit = dbQuery {
         Reservations
             .insert {
@@ -212,6 +228,7 @@ class UserService(
                 it[meal_id] = reservation.mealId
                 it[date_of_reservation] = reservation.dateOfReservation
             }
+        updateLast(reservation.userId)
     }
 
     override suspend fun deleteReservation(reservationId: String): Unit = dbQuery {

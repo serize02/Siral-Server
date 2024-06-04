@@ -33,7 +33,6 @@ fun Application.module() {
     )
 
     events(userService)
-
     configureSerialization()
     configureSecurity(tokenConfig)
     configureRouting(userService, tokenService, tokenConfig)

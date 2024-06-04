@@ -12,6 +12,7 @@ fun events(userService: UserService){
         while (true){
             delay(60 * 1000)
             userService.activateMeals(2)
+            userService.updateActive()
         }
     }
 }
