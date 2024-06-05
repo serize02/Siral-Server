@@ -37,6 +37,8 @@ fun Route.insertMeals(userService: UserService) {
                 ?: return@post call.respond(HttpStatusCode.InternalServerError)
             val role = principal.getClaim("userRole", String::class)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied role")
+            if(role == "ADMIN")
+                return@post call.respond(HttpStatusCode.Unauthorized, "You can't access this route")
             val user = userService.getUserById(userId)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val request = call.receive<List<MealRequest>>()

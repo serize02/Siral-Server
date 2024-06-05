@@ -41,7 +41,7 @@ class UserService(
         val id = varchar("id", 128)
         val username = varchar("username", 50)
         val role = varchar("role", 20)
-        val dinningHall = varchar("dinning_hall", 100) references DinningHalls.name
+        val dinningHall = varchar("dinning_hall", 100)
         val last = varchar("last", 16)
         val active = bool("status")
         override val primaryKey = PrimaryKey(id)
@@ -51,7 +51,7 @@ class UserService(
         val id = varchar("id", 128)
         val date = varchar("date", 16)
         val time = varchar("time", 16)
-        val dinningHall = varchar("dinning_hall", 32) references DinningHalls.name
+        val dinningHall = varchar("dinning_hall", 32)
         val active = bool("active")
 
         override val primaryKey = PrimaryKey(id)
@@ -105,9 +105,9 @@ class UserService(
             }
     }
 
-    override suspend fun deleteDinningHall(dinningHallId: String): Unit = dbQuery {
+    override suspend fun deleteDinningHallByName(dinningHallName: String): Unit = dbQuery {
         DinningHalls
-            .deleteWhere { DinningHalls.id eq dinningHallId }
+            .deleteWhere { name eq dinningHallName }
     }
 
     override suspend fun getDinningHallByName(dinningHallName: String): DinningHall? = dbQuery {
