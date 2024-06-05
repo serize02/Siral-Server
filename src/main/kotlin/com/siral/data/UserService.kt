@@ -19,7 +19,8 @@ import java.time.LocalDate
 
 class UserService(
     private val database: Database
-):  AdminDataSource,
+):
+    AdminDataSource,
     DinningHallDataSource,
     UserDataSource,
     MealDataSource,
@@ -107,6 +108,18 @@ class UserService(
     override suspend fun deleteDinningHall(dinningHallId: String): Unit = dbQuery {
         DinningHalls
             .deleteWhere { DinningHalls.id eq dinningHallId }
+    }
+
+    override suspend fun getDinningHallByName(dinningHallName: String): DinningHall? = dbQuery {
+        DinningHalls
+            .select { DinningHalls.name eq dinningHallName }
+            .map {
+                DinningHall(
+                    id = it[DinningHalls.id],
+                    name = it[DinningHalls.name]
+                )
+            }
+            .singleOrNull()
     }
 
 

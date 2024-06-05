@@ -41,7 +41,7 @@ fun Route.login(
 ) {
     post("/siral/login") {
         val credentials = call.receive<AuthCredentials>()
-        val authResponse = verifyCredentials(credentials)
+        val authResponse = verifyCredentials(credentials, userService)
         if(!authResponse)
             return@post call.respond(HttpStatusCode.Conflict, "Invalid Credentials")
         val foundUser = userService.getUserByUsername(credentials.username)
