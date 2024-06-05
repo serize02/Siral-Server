@@ -2,6 +2,8 @@ package com.siral.data
 
 import com.siral.data.admin.Admin
 import com.siral.data.admin.AdminDataSource
+import com.siral.data.dinninghall.DinningHall
+import com.siral.data.dinninghall.DinningHallDataSource
 import com.siral.data.meal.Meal
 import com.siral.data.meal.MealDataSource
 import com.siral.data.reservation.Reservation
@@ -17,32 +19,38 @@ import java.time.LocalDate
 
 class UserService(
     private val database: Database
-): AdminDataSource,
+):  AdminDataSource,
+    DinningHallDataSource,
     UserDataSource,
     MealDataSource,
     ReservationDataSource
 {
-
     object Admins: Table() {
         val username = varchar("username", 50)
         override val primaryKey = PrimaryKey(username)
+    }
+
+    object DinningHalls: Table(){
+        val id = varchar("id", 128)
+        val name = varchar("name", 50)
+        override val primaryKey = PrimaryKey(id)
     }
 
     object Users: Table() {
         val id = varchar("id", 128)
         val username = varchar("username", 50)
         val role = varchar("role", 20)
-        val dinningHall = varchar("dinning_hall", 100)
+        val dinningHall = varchar("dinning_hall", 100) references DinningHalls.name
         val last = varchar("last", 16)
         val active = bool("status")
         override val primaryKey = PrimaryKey(id)
     }
 
-    object Meals: Table(){
+    object Schedule: Table(){
         val id = varchar("id", 128)
         val date = varchar("date", 16)
         val time = varchar("time", 16)
-        val dinningHall = varchar("dinning_hall", 32)
+        val dinningHall = varchar("dinning_hall", 32) references DinningHalls.name
         val active = bool("active")
 
         override val primaryKey = PrimaryKey(id)
@@ -51,14 +59,14 @@ class UserService(
     object Reservations: Table() {
         val id = varchar("id", 128)
         val user_id = varchar("user_id", 128) references Users.id
-        val meal_id = varchar("meal_id", 128) references Meals.id
+        val meal_id = varchar("meal_id", 128) references Schedule.id
         val date_of_reservation = varchar("date_of_reservation", 16)
         override val primaryKey = PrimaryKey(id)
     }
 
     init {
         transaction(database) {
-            SchemaUtils.create(Admins, Users, Meals, Reservations)
+            SchemaUtils.create(Admins, Users, Schedule, Reservations)
         }
     }
 
@@ -85,6 +93,20 @@ class UserService(
                 .singleOrNull()
         }
         return user != null
+    }
+
+
+    override suspend fun insertDinningHall(dinningHall: DinningHall): Unit = dbQuery {
+        DinningHalls
+            .insert {
+                it[id] = dinningHall.id
+                it[name] = dinningHall.name
+            }
+    }
+
+    override suspend fun deleteDinningHall(dinningHallId: String): Unit = dbQuery {
+        DinningHalls
+            .deleteWhere { DinningHalls.id eq dinningHallId }
     }
 
 
@@ -165,51 +187,51 @@ class UserService(
 
     override suspend fun getMealsForTheNextDays(user: User): List<Meal> = dbQuery{
         val today = LocalDate.now().toString()
-        return@dbQuery Meals
-            .select { ((Meals.date greaterEq today) and (Meals.dinningHall eq user.dinningHall))}
+        return@dbQuery Schedule
+            .select { ((Schedule.date greaterEq today) and (Schedule.dinningHall eq user.dinningHall))}
             .map {
                 Meal(
-                    id = it[Meals.id],
-                    date = it[Meals.date],
-                    time = it[Meals.time],
-                    dinningHall = it[Meals.dinningHall],
-                    active = it[Meals.active]
+                    id = it[Schedule.id],
+                    date = it[Schedule.date],
+                    time = it[Schedule.time],
+                    dinningHall = it[Schedule.dinningHall],
+                    active = it[Schedule.active]
                 )
             }
     }
 
     override suspend fun getMealById(mealId: String): Meal? = dbQuery {
-        Meals
-            .select { Meals.id eq mealId }
+        Schedule
+            .select { Schedule.id eq mealId }
             .map {
                 Meal(
-                    id = it[Meals.id],
-                    date = it[Meals.date],
-                    time = it[Meals.time],
-                    dinningHall = it[Meals.dinningHall],
-                    active = it[Meals.active]
+                    id = it[Schedule.id],
+                    date = it[Schedule.date],
+                    time = it[Schedule.time],
+                    dinningHall = it[Schedule.dinningHall],
+                    active = it[Schedule.active]
                 )
             }
             .singleOrNull()
     }
 
     override suspend fun getMeal(meal: Meal): Meal? = dbQuery {
-        Meals
-            .select { ((Meals.date eq meal.date) and (Meals.time eq meal.time) and (Meals.dinningHall eq meal.dinningHall)) }
+        Schedule
+            .select { ((Schedule.date eq meal.date) and (Schedule.time eq meal.time) and (Schedule.dinningHall eq meal.dinningHall)) }
             .map {
                 Meal(
-                    id = it[Meals.id],
-                    date = it[Meals.date],
-                    time = it[Meals.time],
-                    dinningHall = it[Meals.dinningHall],
-                    active = it[Meals.active]
+                    id = it[Schedule.id],
+                    date = it[Schedule.date],
+                    time = it[Schedule.time],
+                    dinningHall = it[Schedule.dinningHall],
+                    active = it[Schedule.active]
                 )
             }
             .singleOrNull()
     }
 
     override suspend fun insertMeals(meal: Meal): Unit = dbQuery {
-        Meals
+        Schedule
             .insert {
                 it[id] = meal.id
                 it[date] = meal.date
@@ -221,8 +243,8 @@ class UserService(
 
     override suspend fun activateMeals(days: Long): Unit = dbQuery {
         val date = LocalDate.now().plusDays(days).toString()
-        Meals
-            .update({ Meals.date eq date }){
+        Schedule
+            .update({ Schedule.date eq date }){
                 it[active] = true
             }
     }
@@ -271,5 +293,7 @@ class UserService(
             }
             .singleOrNull()
     }
+
+
 
 }
