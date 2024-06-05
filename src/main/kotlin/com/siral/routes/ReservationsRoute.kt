@@ -27,12 +27,12 @@ fun Route.insertReservations(
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val mealId = call.parameters["id"]
                 ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing Meal ID")
-            val foundMeal = userService.getReservationByMealdId(mealId) //in reservations
+            val foundMeal = userService.getReservationByMealIdAndUserId(mealId, userId) //in reservations
             if(foundMeal == null) {
                 val meal = userService.getMealById(mealId)
                     ?: return@post call.respond(HttpStatusCode.NotFound, "Meal not found")
-                if(!meal.active)
-                    return@post call.respond(HttpStatusCode.ServiceUnavailable, "This meal is not available")
+                if(!meal.active || meal.dinningHall != user.dinningHall)
+                    return@post call.respond(HttpStatusCode.BadRequest, "This meal is not available")
                 userService.insertReservation(
                     Reservation(
                         userId = userId,
@@ -41,8 +41,7 @@ fun Route.insertReservations(
                 )
                 return@post call.respond(HttpStatusCode.Created, "Reservation Done")
             }
-            return@post call.respond(HttpStatusCode.ServiceUnavailable, "You Already Reserved For This Meal")
-
+            return@post call.respond(HttpStatusCode.BadRequest, "You Already Reserved For This Meal")
         }
     }
 }

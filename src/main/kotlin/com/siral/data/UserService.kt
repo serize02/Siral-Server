@@ -258,9 +258,9 @@ class UserService(
             }
     }
 
-    override suspend fun getReservationByMealdId(mealId: String): Reservation? = dbQuery {
+    override suspend fun getReservationByMealIdAndUserId(mealId: String, userId: String): Reservation? = dbQuery {
         Reservations
-            .select { Reservations.meal_id eq mealId }
+            .select { ((Reservations.meal_id eq mealId) and (Reservations.user_id eq userId)) }
             .map {
                 Reservation(
                     id = it[Reservations.id],
