@@ -1,0 +1,10 @@
+package com.siral.request
+
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class ScheduleItemRequest(
+    val date: String, //yy-mm-dd
+    val time: String, //breakfast, lunch, dinner
+    val dinningHall: String
+)

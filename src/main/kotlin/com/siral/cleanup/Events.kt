@@ -11,7 +11,7 @@ fun dbCleanUp(userService: UserService){
     scope.launch {
         while (true){
             delay(60 * 1000)
-            userService.activateMeals(2)
+            userService.activateScheduleItem(2)
             userService.updateActive()
             userService.deleteUser()
         }

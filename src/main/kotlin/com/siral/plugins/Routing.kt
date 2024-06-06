@@ -9,6 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import org.jetbrains.annotations.ApiStatus.Experimental
 
 fun Application.configureRouting(
     userService: UserService,
@@ -17,18 +18,25 @@ fun Application.configureRouting(
 ) {
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            call.respondText(text = "500: $cause" , status = HttpStatusCode.InternalServerError)
+            call.respondText(text = "500: $cause", status = HttpStatusCode.InternalServerError)
         }
     }
     routing {
         addAdmins(userService)
-        login(userService, tokenService, tokenConfig)
+
+        adminLogin(userService, tokenService, tokenConfig)
+        studentLogin(userService, tokenService, tokenConfig)
+
         auth()
-        insertMeals(userService)
-        getMealsForNextDays(userService)
-        getMealById(userService)
+
+        insertDinningHalls(userService)
+        deleteDinningHall(userService)
+
+        insertScheduleItem(userService)
+        getScheduleForNextDays(userService)
+
         insertReservations(userService)
         deleteReservation(userService)
-        getReservations(userService)
+        getStudentReservations(userService)
     }
 }

@@ -8,6 +8,6 @@ import java.util.*
 data class Reservation(
     val id: String = UUID.randomUUID().toString(),
     val userId: String,
-    val mealId: String,
+    val scheduleItemId: String,
     val dateOfReservation: String = LocalDate.now().toString()
 )

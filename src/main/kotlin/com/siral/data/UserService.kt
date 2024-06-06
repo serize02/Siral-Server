@@ -4,12 +4,12 @@ import com.siral.data.admin.Admin
 import com.siral.data.admin.AdminDataSource
 import com.siral.data.dinninghall.DinningHall
 import com.siral.data.dinninghall.DinningHallDataSource
-import com.siral.data.meal.Meal
-import com.siral.data.meal.MealDataSource
+import com.siral.data.schedule.ScheduleItem
+import com.siral.data.schedule.ScheduleDataSource
 import com.siral.data.reservation.Reservation
 import com.siral.data.reservation.ReservationDataSource
-import com.siral.data.user.User
-import com.siral.data.user.UserDataSource
+import com.siral.data.student.Student
+import com.siral.data.student.StudentDataSource
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -22,11 +22,12 @@ class UserService(
 ):
     AdminDataSource,
     DinningHallDataSource,
-    UserDataSource,
-    MealDataSource,
+    StudentDataSource,
+    ScheduleDataSource,
     ReservationDataSource
 {
     object Admins: Table() {
+        val id = varchar("id", 128)
         val username = varchar("username", 50)
         override val primaryKey = PrimaryKey(username)
     }
@@ -37,10 +38,9 @@ class UserService(
         override val primaryKey = PrimaryKey(id)
     }
 
-    object Users: Table() {
+    object Students: Table() {
         val id = varchar("id", 128)
         val username = varchar("username", 50)
-        val role = varchar("role", 20)
         val dinningHall = varchar("dinning_hall", 100)
         val last = varchar("last", 16)
         val active = bool("status")
@@ -59,15 +59,15 @@ class UserService(
 
     object Reservations: Table() {
         val id = varchar("id", 128)
-        val user_id = varchar("user_id", 128) references Users.id
-        val meal_id = varchar("meal_id", 128) references Schedule.id
+        val userId = varchar("user_id", 128) references Students.id
+        val scheduleItemId = varchar("schedule_item_id", 128) references Schedule.id
         val date_of_reservation = varchar("date_of_reservation", 16)
         override val primaryKey = PrimaryKey(id)
     }
 
     init {
         transaction(database) {
-            SchemaUtils.create(Admins, Users, Schedule, Reservations)
+            SchemaUtils.create(Admins, DinningHalls, Students, Schedule, Reservations)
         }
     }
 
@@ -75,25 +75,36 @@ class UserService(
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
 
-    override suspend fun insertAdmin(userName: String): Unit = dbQuery {
+    override suspend fun insertAdmin(admin: Admin): Unit = dbQuery {
         Admins
             .insert {
-                it[username] = userName
+                it[id] = admin.id
+                it[username] = admin.username
             }
     }
 
-    override suspend fun verifyAdmin(userName: String): Boolean{
-        val user = dbQuery {
-            Admins
-                .select { Admins.username eq userName }
-                .map {
-                    Admin(
-                        username = it[Admins.username]
-                    )
-                }
-                .singleOrNull()
-        }
-        return user != null
+    override suspend fun getAdminByName(userName: String): Admin? = dbQuery {
+        Admins
+            .select { Admins.username eq userName }
+            .map {
+                Admin(
+                    id = it[Admins.id],
+                    username = it[Admins.username],
+                )
+            }
+            .singleOrNull()
+    }
+
+    override suspend fun getAdminById(adminId: String): Admin? = dbQuery {
+        Admins
+            .select { Admins.id eq adminId }
+            .map {
+                Admin(
+                    id = it[Admins.id],
+                    username = it[Admins.username],
+                )
+            }
+            .singleOrNull()
     }
 
 
@@ -123,21 +134,20 @@ class UserService(
     }
 
 
-    override suspend fun insertUser(user: User): Unit = dbQuery {
-        Users
+    override suspend fun insertUser(student: Student): Unit = dbQuery {
+        Students
             .insert{
-                it[id] = user.id
-                it[username] = user.username
-                it[role] = user.role
-                it[dinningHall] = user.dinningHall
-                it[last] = user.last
-                it[active] = user.active
+                it[id] = student.id
+                it[username] = student.username
+                it[dinningHall] = student.dinningHall
+                it[last] = student.last
+                it[active] = student.active
             }
     }
 
     override suspend fun updateLast(userId: String): Unit = dbQuery {
-        Users
-            .update ({ Users.id eq userId }) {
+        Students
+            .update ({ Students.id eq userId }) {
                 it[last] = LocalDate.now().toString()
                 it[active] = true
             }
@@ -145,52 +155,50 @@ class UserService(
 
     override suspend fun updateActive(): Unit = dbQuery {
         val date = LocalDate.now().minusMonths(2).toString()
-        Users
-            .update ({ Users.last eq date}){
+        Students
+            .update ({ Students.last eq date}){
                 it[active] = false
             }
     }
 
     override suspend fun deleteUser(): Unit = dbQuery {
         val date = LocalDate.now().minusMonths(6).toString()
-        val userId = Users
-            .select { Users.last eq date }
-            .map { Users.id.toString() }
+        val userId = Students
+            .select { Students.last eq date }
+            .map { Students.id.toString() }
         userId.forEach { userId ->
             Reservations
-                .deleteWhere { Reservations.user_id eq userId}
-            Users
-                .deleteWhere { Users.id eq userId }
+                .deleteWhere { Reservations.userId eq userId}
+            Students
+                .deleteWhere { Students.id eq userId }
         }
     }
 
-    override suspend fun getUserByUsername(username: String): User? = dbQuery {
-        Users
-            .select { Users.username eq username }
+    override suspend fun getUserByUsername(username: String): Student? = dbQuery {
+        Students
+            .select { Students.username eq username }
             .map {
-                User(
-                    id = it[Users.id],
-                    username = it[Users.username],
-                    role = it[Users.role],
-                    dinningHall = it[Users.dinningHall],
-                    last = it[Users.last],
-                    active = it[Users.active]
+                Student(
+                    id = it[Students.id],
+                    username = it[Students.username],
+                    dinningHall = it[Students.dinningHall],
+                    last = it[Students.last],
+                    active = it[Students.active]
                 )
             }
             .singleOrNull()
     }
 
-    override suspend fun getUserById(userId: String): User? = dbQuery {
-        Users
-            .select { Users.id eq userId }
+    override suspend fun getUserById(userId: String): Student? = dbQuery {
+        Students
+            .select { Students.id eq userId }
             .map {
-                User(
-                    id = it[Users.id],
-                    username = it[Users.username],
-                    role = it[Users.role],
-                    dinningHall = it[Users.dinningHall],
-                    last = it[Users.last],
-                    active = it[Users.active]
+                Student(
+                    id = it[Students.id],
+                    username = it[Students.username],
+                    dinningHall = it[Students.dinningHall],
+                    last = it[Students.last],
+                    active = it[Students.active]
                 )
             }
             .singleOrNull()
@@ -198,12 +206,12 @@ class UserService(
 
 
 
-    override suspend fun getMealsForTheNextDays(user: User): List<Meal> = dbQuery{
+    override suspend fun getScheduleForTheNextDays(dinningHallName: String): List<ScheduleItem> = dbQuery{
         val today = LocalDate.now().toString()
         return@dbQuery Schedule
-            .select { ((Schedule.date greaterEq today) and (Schedule.dinningHall eq user.dinningHall))}
+            .select { ((Schedule.date greaterEq today) and (Schedule.dinningHall eq dinningHallName))}
             .map {
-                Meal(
+                ScheduleItem(
                     id = it[Schedule.id],
                     date = it[Schedule.date],
                     time = it[Schedule.time],
@@ -213,11 +221,11 @@ class UserService(
             }
     }
 
-    override suspend fun getMealById(mealId: String): Meal? = dbQuery {
+    override suspend fun getScheduleItemById(mealId: String): ScheduleItem? = dbQuery {
         Schedule
             .select { Schedule.id eq mealId }
             .map {
-                Meal(
+                ScheduleItem(
                     id = it[Schedule.id],
                     date = it[Schedule.date],
                     time = it[Schedule.time],
@@ -228,11 +236,11 @@ class UserService(
             .singleOrNull()
     }
 
-    override suspend fun getMeal(meal: Meal): Meal? = dbQuery {
+    override suspend fun getScheduleItem(scheduleItem: ScheduleItem): ScheduleItem? = dbQuery {
         Schedule
-            .select { ((Schedule.date eq meal.date) and (Schedule.time eq meal.time) and (Schedule.dinningHall eq meal.dinningHall)) }
+            .select { ((Schedule.date eq scheduleItem.date) and (Schedule.time eq scheduleItem.time) and (Schedule.dinningHall eq scheduleItem.dinningHall)) }
             .map {
-                Meal(
+                ScheduleItem(
                     id = it[Schedule.id],
                     date = it[Schedule.date],
                     time = it[Schedule.time],
@@ -243,18 +251,18 @@ class UserService(
             .singleOrNull()
     }
 
-    override suspend fun insertMeals(meal: Meal): Unit = dbQuery {
+    override suspend fun insertScheduleItem(scheduleItem: ScheduleItem): Unit = dbQuery {
         Schedule
             .insert {
-                it[id] = meal.id
-                it[date] = meal.date
-                it[time] = meal.time
-                it[dinningHall] = meal.dinningHall
-                it[active] = meal.active
+                it[id] = scheduleItem.id
+                it[date] = scheduleItem.date
+                it[time] = scheduleItem.time
+                it[dinningHall] = scheduleItem.dinningHall
+                it[active] = scheduleItem.active
             }
     }
 
-    override suspend fun activateMeals(days: Long): Unit = dbQuery {
+    override suspend fun activateScheduleItem(days: Long): Unit = dbQuery {
         val date = LocalDate.now().plusDays(days).toString()
         Schedule
             .update({ Schedule.date eq date }){
@@ -268,8 +276,8 @@ class UserService(
         Reservations
             .insert {
                 it[id] = reservation.id
-                it[user_id] = reservation.userId
-                it[meal_id] = reservation.mealId
+                it[userId] = reservation.userId
+                it[scheduleItemId] = reservation.scheduleItemId
                 it[date_of_reservation] = reservation.dateOfReservation
             }
         updateLast(reservation.userId)
@@ -282,12 +290,12 @@ class UserService(
 
     override suspend fun getReservations(userId: String): List<Reservation> = dbQuery{
         Reservations
-            .select { Reservations.user_id eq userId }
+            .select { Reservations.userId eq userId }
             .map {
                 Reservation(
                     id = it[Reservations.id],
-                    userId = it[Reservations.user_id],
-                    mealId = it[Reservations.meal_id],
+                    userId = it[Reservations.userId],
+                    scheduleItemId = it[Reservations.scheduleItemId],
                     dateOfReservation = it[Reservations.date_of_reservation],
                 )
             }
@@ -295,18 +303,15 @@ class UserService(
 
     override suspend fun getReservationByMealIdAndUserId(mealId: String, userId: String): Reservation? = dbQuery {
         Reservations
-            .select { ((Reservations.meal_id eq mealId) and (Reservations.user_id eq userId)) }
+            .select { ((Reservations.scheduleItemId eq mealId) and (Reservations.userId eq userId)) }
             .map {
                 Reservation(
                     id = it[Reservations.id],
-                    userId = it[Reservations.user_id],
-                    mealId = it[Reservations.meal_id],
+                    userId = it[Reservations.userId],
+                    scheduleItemId = it[Reservations.scheduleItemId],
                     dateOfReservation = it[Reservations.date_of_reservation],
                 )
             }
             .singleOrNull()
     }
-
-
-
 }

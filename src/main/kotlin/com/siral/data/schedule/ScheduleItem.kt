@@ -1,10 +1,10 @@
-package com.siral.data.meal
+package com.siral.data.schedule
 
 import kotlinx.serialization.Serializable
 import java.util.*
 
 @Serializable
-data class Meal(
+data class ScheduleItem(
     val id: String = UUID.randomUUID().toString(),
     val date: String, //yy-mm-dd
     val time: String, //breakfast, lunch, dinner

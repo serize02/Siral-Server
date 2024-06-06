@@ -15,13 +15,13 @@ fun Route.insertDinningHalls(userService: UserService) {
     authenticate {
         post("siral/dinninghalls") {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal?.getClaim("userId", String::class)
-                ?: return@post call.respond(HttpStatusCode.InternalServerError)
-            val role = principal.getClaim("userRole", String::class)
-                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied role")
-            if(role == "ADMIN")
+            val role = principal?.getClaim("userRole", String::class)
+                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
+            if(role != "ADMIN")
                 return@post call.respond(HttpStatusCode.Unauthorized, "You can't access this route")
-            val user = userService.getUserById(userId)
+            val adminId = principal.getClaim("userId", String::class)
+                ?: return@post call.respond(HttpStatusCode.InternalServerError)
+            val admin = userService.getAdminById(adminId)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val request = call.receive<DinningHallRequest>()
             if (request.name.isBlank())
@@ -38,17 +38,17 @@ fun Route.insertDinningHalls(userService: UserService) {
 
 fun Route.deleteDinningHall(userService: UserService) {
     authenticate {
-        delete("siral/dinninghalls/{dinninghallname}") {
+        delete("siral/dinninghalls/{dinningHallName}") {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal?.getClaim("userId", String::class)
-                ?: return@delete call.respond(HttpStatusCode.InternalServerError)
-            val role = principal.getClaim("userRole", String::class)
+            val role = principal?.getClaim("userRole", String::class)
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied role")
-            if(role == "ADMIN")
+            if(role != "ADMIN")
                 return@delete call.respond(HttpStatusCode.Unauthorized, "You can't access this route")
-            val user = userService.getUserById(userId)
+            val adminId = principal.getClaim("userId", String::class)
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError)
+            val admin = userService.getAdminById(adminId)
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied")
-            val name = call.parameters["dinninghallname"]
+            val name = call.parameters["dinningHallName"]
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, "DinningHall Name is Required")
             userService.deleteDinningHallByName(name)
             return@delete call.respond(HttpStatusCode.OK, "DinningHall Removed Successfully")
