@@ -32,6 +32,8 @@ fun Route.insertScheduleItem(userService: UserService) {
             val request = call.receive<List<ScheduleItemRequest>>()
             val schedule = request.map {it.toScheduleItem()}
             schedule.forEach {
+                val dinninghall = userService.getDinningHallByName(it.dinningHall)
+                    ?: return@post call.respond(HttpStatusCode.BadRequest, "This Dinning Hall Doesn't Exist")
                 val scheduleItem = userService.getScheduleItem(it)
                     ?: userService.insertScheduleItem(it)
             }
