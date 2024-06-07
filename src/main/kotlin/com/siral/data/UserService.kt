@@ -135,7 +135,7 @@ class UserService(
     }
 
 
-    override suspend fun insertUser(student: Student): Unit = dbQuery {
+    override suspend fun insertStudent(student: Student): Unit = dbQuery {
         Students
             .insert{
                 it[id] = student.id
@@ -162,7 +162,7 @@ class UserService(
             }
     }
 
-    override suspend fun deleteUser(): Unit = dbQuery {
+    override suspend fun deleteStudent(): Unit = dbQuery {
         val date = LocalDate.now().minusMonths(6).toString()
         val userId = Students
             .select { Students.last eq date }
@@ -175,7 +175,12 @@ class UserService(
         }
     }
 
-    override suspend fun getUserByUsername(username: String): Student? = dbQuery {
+    override suspend fun deleteStudentByDinningHall(dinningHallName: String): Unit = dbQuery {
+        Students
+            .deleteWhere { Students.dinningHall eq dinningHallName }
+    }
+
+    override suspend fun getStudentByUsername(username: String): Student? = dbQuery {
         Students
             .select { Students.username eq username }
             .map {
@@ -190,7 +195,7 @@ class UserService(
             .singleOrNull()
     }
 
-    override suspend fun getUserById(userId: String): Student? = dbQuery {
+    override suspend fun getStudentById(userId: String): Student? = dbQuery {
         Students
             .select { Students.id eq userId }
             .map {
@@ -271,6 +276,10 @@ class UserService(
             }
     }
 
+    override suspend fun deleteScheduleItemByDinningHall(dinningHallName: String): Unit = dbQuery {
+        Schedule
+            .deleteWhere { Schedule.dinningHall eq dinningHallName }
+    }
 
 
     override suspend fun insertReservation(reservation: Reservation): Unit = dbQuery {

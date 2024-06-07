@@ -50,7 +50,7 @@ fun Route.getScheduleForNextDays(userService: UserService) {
                 ?: return@get call.respond(HttpStatusCode.InternalServerError)
             val role = principal.getClaim("userRole", String::class)
                 ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
-            val user = if(role == "ADMIN") userService.getAdminById(userId) else userService.getUserById(userId)
+            val user = if(role == "ADMIN") userService.getAdminById(userId) else userService.getStudentById(userId)
                 ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val dinningHallName = call.parameters["dinningHallName"]
                 ?: return@get call.respond(HttpStatusCode.BadRequest, "DinningHall Name is required")

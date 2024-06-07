@@ -9,4 +9,5 @@ interface ScheduleDataSource {
     suspend fun getScheduleItem(scheduleItem: ScheduleItem): ScheduleItem?
     suspend fun insertScheduleItem(scheduleItem: ScheduleItem)
     suspend fun activateScheduleItem(days: Long)
+    suspend fun deleteScheduleItemByDinningHall(dinningHallName: String)
 }

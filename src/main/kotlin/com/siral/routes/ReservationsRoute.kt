@@ -17,7 +17,7 @@ fun Route.insertReservations(
             val principal = call.principal<JWTPrincipal>()
             val userId = principal?.getClaim("userId", String::class)
                 ?: return@post call.respond(HttpStatusCode.InternalServerError)
-            val user = userService.getUserById(userId)
+            val user = userService.getStudentById(userId)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val scheduleItemId = call.parameters["id"]
                 ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing Schedule Item ID")
@@ -49,7 +49,7 @@ fun Route.deleteReservation(
             val principal = call.principal<JWTPrincipal>()
             val userId = principal?.getClaim("userId", String::class)
                 ?: return@delete call.respond(HttpStatusCode.InternalServerError)
-            val user = userService.getUserById(userId)
+            val user = userService.getStudentById(userId)
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val reservationId = call.parameters["id"]
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, "Missing Reservation Id")
@@ -72,7 +72,7 @@ fun Route.getStudentReservations(
                 return@get call.respond(HttpStatusCode.Unauthorized, "You can't access this route")
             val userId = principal.getClaim("userId", String::class)
                 ?: return@get call.respond(HttpStatusCode.InternalServerError)
-            val user = userService.getUserById(userId)
+            val user = userService.getStudentById(userId)
                 ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val reservations = userService.getReservations(userId)
             return@get call.respond(HttpStatusCode.OK, reservations)

@@ -34,7 +34,7 @@ fun Route.studentLogin(
         val authResponse = verifyStudentCredentials(credentials, userService)
         if(!authResponse)
             return@post call.respond(HttpStatusCode.Conflict, "Invalid Credentials")
-        val foundStudent = userService.getUserByUsername(credentials.username)
+        val foundStudent = userService.getStudentByUsername(credentials.username)
         val student = Student(
             username = credentials.username,
             dinningHall = credentials.dinningHall
@@ -54,7 +54,7 @@ fun Route.studentLogin(
         )
         if(foundStudent != null)
             return@post call.respond(HttpStatusCode.OK, foundStudent.toUserAuthResponse(token))
-        userService.insertUser(student)
+        userService.insertStudent(student)
         return@post call.respond(HttpStatusCode.OK, student.toUserAuthResponse(token))
     }
 }
