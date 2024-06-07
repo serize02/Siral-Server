@@ -42,7 +42,7 @@ class UserService(
     object Students: Table() {
         val id = varchar("id", 128)
         val username = varchar("username", 50)
-        val dinningHall = varchar("dinning_hall", 100)
+        val dinningHall = varchar("dinning_hall", 100) references DinningHalls.name
         val last = varchar("last", 16)
         val active = bool("status")
         override val primaryKey = PrimaryKey(id)
@@ -52,7 +52,7 @@ class UserService(
         val id = varchar("id", 128)
         val date = varchar("date", 16)
         val time = varchar("time", 16)
-        val dinningHall = varchar("dinning_hall", 32)
+        val dinningHall = varchar("dinning_hall", 32) references DinningHalls.name
         val active = bool("active")
 
         override val primaryKey = PrimaryKey(id)
