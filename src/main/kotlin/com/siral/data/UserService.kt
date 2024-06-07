@@ -11,6 +11,7 @@ import com.siral.data.reservation.ReservationDataSource
 import com.siral.data.student.Student
 import com.siral.data.student.StudentDataSource
 import kotlinx.coroutines.Dispatchers
+import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -74,7 +75,7 @@ class UserService(
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-
+    @Experimental
     override suspend fun insertAdmin(admin: Admin): Unit = dbQuery {
         Admins
             .insert {
