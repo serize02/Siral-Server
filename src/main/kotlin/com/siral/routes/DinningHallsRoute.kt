@@ -50,6 +50,10 @@ fun Route.deleteDinningHall(userService: UserService) {
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val name = call.parameters["dinningHallName"]
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, "DinningHall Name is Required")
+            if(name.isBlank())
+                return@delete call.respond(HttpStatusCode.BadRequest, "DinningHall Name is Required")
+            userService.deleteStudentByDinningHall(name)
+            userService.deleteScheduleItemByDinningHall(name)
             userService.deleteDinningHallByName(name)
             return@delete call.respond(HttpStatusCode.OK, "DinningHall Removed Successfully")
         }

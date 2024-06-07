@@ -11,6 +11,7 @@ import com.siral.data.reservation.ReservationDataSource
 import com.siral.data.student.Student
 import com.siral.data.student.StudentDataSource
 import kotlinx.coroutines.Dispatchers
+import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -41,7 +42,7 @@ class UserService(
     object Students: Table() {
         val id = varchar("id", 128)
         val username = varchar("username", 50)
-        val dinningHall = varchar("dinning_hall", 100)
+        val dinningHall = varchar("dinning_hall", 100) references DinningHalls.name
         val last = varchar("last", 16)
         val active = bool("status")
         override val primaryKey = PrimaryKey(id)
@@ -51,7 +52,7 @@ class UserService(
         val id = varchar("id", 128)
         val date = varchar("date", 16)
         val time = varchar("time", 16)
-        val dinningHall = varchar("dinning_hall", 32)
+        val dinningHall = varchar("dinning_hall", 32) references DinningHalls.name
         val active = bool("active")
 
         override val primaryKey = PrimaryKey(id)
@@ -74,7 +75,7 @@ class UserService(
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-
+    @Experimental
     override suspend fun insertAdmin(admin: Admin): Unit = dbQuery {
         Admins
             .insert {
@@ -134,7 +135,7 @@ class UserService(
     }
 
 
-    override suspend fun insertUser(student: Student): Unit = dbQuery {
+    override suspend fun insertStudent(student: Student): Unit = dbQuery {
         Students
             .insert{
                 it[id] = student.id
@@ -161,7 +162,7 @@ class UserService(
             }
     }
 
-    override suspend fun deleteUser(): Unit = dbQuery {
+    override suspend fun deleteStudent(): Unit = dbQuery {
         val date = LocalDate.now().minusMonths(6).toString()
         val userId = Students
             .select { Students.last eq date }
@@ -174,7 +175,12 @@ class UserService(
         }
     }
 
-    override suspend fun getUserByUsername(username: String): Student? = dbQuery {
+    override suspend fun deleteStudentByDinningHall(dinningHallName: String): Unit = dbQuery {
+        Students
+            .deleteWhere { Students.dinningHall eq dinningHallName }
+    }
+
+    override suspend fun getStudentByUsername(username: String): Student? = dbQuery {
         Students
             .select { Students.username eq username }
             .map {
@@ -189,7 +195,7 @@ class UserService(
             .singleOrNull()
     }
 
-    override suspend fun getUserById(userId: String): Student? = dbQuery {
+    override suspend fun getStudentById(userId: String): Student? = dbQuery {
         Students
             .select { Students.id eq userId }
             .map {
@@ -270,6 +276,10 @@ class UserService(
             }
     }
 
+    override suspend fun deleteScheduleItemByDinningHall(dinningHallName: String): Unit = dbQuery {
+        Schedule
+            .deleteWhere { Schedule.dinningHall eq dinningHallName }
+    }
 
 
     override suspend fun insertReservation(reservation: Reservation): Unit = dbQuery {
