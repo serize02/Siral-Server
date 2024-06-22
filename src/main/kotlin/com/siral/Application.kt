@@ -29,7 +29,7 @@ fun Application.module() {
         issuer = environment.config.property("jwt.issuer").getString(),
         audience = environment.config.property("jwt.audience").getString(),
         expiresIn = 365L * 24L * 60L * 60L * 500L,
-        secret = System.getenv("JWT_SECRET")
+        secret = System.getenv("jwt-secret")
     )
 
     dbCleanUp(userService)
