@@ -1,19 +1,20 @@
 package com.siral.data
 
-import com.siral.data.admin.Admin
-import com.siral.data.admin.AdminDataSource
 import com.siral.data.dinninghall.DinningHall
-import com.siral.data.dinninghall.DinningHallDataSource
-import com.siral.data.schedule.ScheduleItem
-import com.siral.data.schedule.ScheduleDataSource
+import com.siral.data.dinninghall.DinninghallDataSource
 import com.siral.data.reservation.Reservation
 import com.siral.data.reservation.ReservationDataSource
+import com.siral.data.schedule.ScheduleDataSource
+import com.siral.data.schedule.ScheduleItem
 import com.siral.data.student.Student
 import com.siral.data.student.StudentDataSource
+import com.siral.responses.StudentData
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.date
+import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDate
@@ -21,173 +22,76 @@ import java.time.LocalDate
 class UserService(
     private val database: Database
 ):
-    AdminDataSource,
-    DinningHallDataSource,
     StudentDataSource,
+    ReservationDataSource,
     ScheduleDataSource,
-    ReservationDataSource
+    DinninghallDataSource
 {
-    object Admins: Table() {
-        val id = varchar("id", 128)
-        val username = varchar("username", 50)
-        override val primaryKey = PrimaryKey(username)
-    }
+    object Students: Table("students") {
+        val id = long("id").autoIncrement()
+        val name = varchar("name", 64)
+        val code = long("student_code")
+        val email = varchar("email", 32)
+        val resident = bool("resident")
+        val last = datetime("last_action").defaultExpression(CurrentDateTime)
+        val active = bool("active").defaultExpression(booleanLiteral(true))
 
-    object DinningHalls: Table(){
-        val id = varchar("id", 128)
-        val name = varchar("name", 50)
         override val primaryKey = PrimaryKey(id)
     }
 
-    object Students: Table() {
-        val id = varchar("id", 128)
-        val username = varchar("username", 50)
-        val dinningHall = varchar("dinning_hall", 100) references DinningHalls.name
-        val last = varchar("last", 16)
-        val active = bool("status")
+    object Dinninghalls: Table(){
+        val id = long("id").autoIncrement()
+        val name = varchar("name", 50)
+
         override val primaryKey = PrimaryKey(id)
     }
 
     object Schedule: Table(){
-        val id = varchar("id", 128)
-        val date = varchar("date", 16)
-        val time = varchar("time", 16)
-        val dinningHall = varchar("dinning_hall", 32) references DinningHalls.name
-        val active = bool("active")
+        val id = long("id").autoIncrement()
+        val itemDate = date("item_date")
+        val time = varchar("time", 50)
+        val dinninghallId = reference("dinning_hall_id", Dinninghalls.id)
+        val available = bool("available")
 
         override val primaryKey = PrimaryKey(id)
     }
 
     object Reservations: Table() {
-        val id = varchar("id", 128)
-        val userId = varchar("user_id", 128) references Students.id
-        val scheduleItemId = varchar("schedule_item_id", 128) references Schedule.id
-        val date_of_reservation = varchar("date_of_reservation", 16)
+        val id = long("id").autoIncrement()
+        val studentID = reference("student_id", Students.id)
+        val scheduleItemId = reference("schedule_item_id", Schedule.id)
+        val dateOfReservation = datetime("reservation_date").defaultExpression(CurrentDateTime)
         override val primaryKey = PrimaryKey(id)
     }
 
+
+    object Admins: Table() {
+        val id = long("id").autoIncrement()
+        val username = varchar("username", 50)
+        override val primaryKey = PrimaryKey(username)
+    }
+
+
     init {
         transaction(database) {
-            SchemaUtils.create(Admins, DinningHalls, Students, Schedule, Reservations)
+            SchemaUtils.createMissingTablesAndColumns(Students)
         }
     }
 
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    @Experimental
-    override suspend fun insertAdmin(admin: Admin): Unit = dbQuery {
-        Admins
-            .insert {
-                it[id] = admin.id
-                it[username] = admin.username
-            }
-    }
 
-    override suspend fun getAdminByName(userName: String): Admin? = dbQuery {
-        Admins
-            .select { Admins.username eq userName }
-            .map {
-                Admin(
-                    id = it[Admins.id],
-                    username = it[Admins.username],
-                )
-            }
-            .singleOrNull()
-    }
-
-    override suspend fun getAdminById(adminId: String): Admin? = dbQuery {
-        Admins
-            .select { Admins.id eq adminId }
-            .map {
-                Admin(
-                    id = it[Admins.id],
-                    username = it[Admins.username],
-                )
-            }
-            .singleOrNull()
-    }
-
-
-    override suspend fun insertDinningHall(dinningHall: DinningHall): Unit = dbQuery {
-        DinningHalls
-            .insert {
-                it[id] = dinningHall.id
-                it[name] = dinningHall.name
-            }
-    }
-
-    override suspend fun deleteDinningHallByName(dinningHallName: String): Unit = dbQuery {
-        DinningHalls
-            .deleteWhere { name eq dinningHallName }
-    }
-
-    override suspend fun getDinningHallByName(dinningHallName: String): DinningHall? = dbQuery {
-        DinningHalls
-            .select { DinningHalls.name eq dinningHallName }
-            .map {
-                DinningHall(
-                    id = it[DinningHalls.id],
-                    name = it[DinningHalls.name]
-                )
-            }
-            .singleOrNull()
-    }
-
-
-    override suspend fun insertStudent(student: Student): Unit = dbQuery {
+    override suspend fun getStudentByEmail(email: String): Student? = dbQuery {
         Students
-            .insert{
-                it[id] = student.id
-                it[username] = student.username
-                it[dinningHall] = student.dinningHall
-                it[last] = student.last
-                it[active] = student.active
-            }
-    }
-
-    override suspend fun updateLast(userId: String): Unit = dbQuery {
-        Students
-            .update ({ Students.id eq userId }) {
-                it[last] = LocalDate.now().toString()
-                it[active] = true
-            }
-    }
-
-    override suspend fun updateActive(): Unit = dbQuery {
-        val date = LocalDate.now().minusMonths(2).toString()
-        Students
-            .update ({ Students.last eq date}){
-                it[active] = false
-            }
-    }
-
-    override suspend fun deleteStudent(): Unit = dbQuery {
-        val date = LocalDate.now().minusMonths(6).toString()
-        val userId = Students
-            .select { Students.last eq date }
-            .map { Students.id.toString() }
-        userId.forEach { userId ->
-            Reservations
-                .deleteWhere { Reservations.userId eq userId}
-            Students
-                .deleteWhere { Students.id eq userId }
-        }
-    }
-
-    override suspend fun deleteStudentByDinningHall(dinningHallName: String): Unit = dbQuery {
-        Students
-            .deleteWhere { Students.dinningHall eq dinningHallName }
-    }
-
-    override suspend fun getStudentByUsername(username: String): Student? = dbQuery {
-        Students
-            .select { Students.username eq username }
-            .map {
+            .select { Students.email eq email}
+            .map{
                 Student(
                     id = it[Students.id],
-                    username = it[Students.username],
-                    dinningHall = it[Students.dinningHall],
+                    name = it[Students.name],
+                    code = it[Students.code],
+                    email = it[Students.email],
+                    resident = it[Students.resident],
                     last = it[Students.last],
                     active = it[Students.active]
                 )
@@ -195,14 +99,26 @@ class UserService(
             .singleOrNull()
     }
 
-    override suspend fun getStudentById(userId: String): Student? = dbQuery {
+    override suspend fun insertStudent(student: StudentData): Long = dbQuery {
         Students
-            .select { Students.id eq userId }
-            .map {
+            .insert {
+                it[name] = student.name
+                it[code] = student.code
+                it[email] = student.email
+                it[resident] = student.resident
+            } get Students.id
+    }
+
+    override suspend fun getStudentById(studentId: Long): Student? = dbQuery {
+        Students
+            .select { Students.id eq studentId }
+            .map{
                 Student(
                     id = it[Students.id],
-                    username = it[Students.username],
-                    dinningHall = it[Students.dinningHall],
+                    name = it[Students.name],
+                    code = it[Students.code],
+                    email = it[Students.email],
+                    resident = it[Students.resident],
                     last = it[Students.last],
                     active = it[Students.active]
                 )
@@ -210,118 +126,122 @@ class UserService(
             .singleOrNull()
     }
 
-
-
-    override suspend fun getScheduleForTheNextDays(dinningHallName: String): List<ScheduleItem> = dbQuery{
-        val today = LocalDate.now().toString()
-        return@dbQuery Schedule
-            .select { ((Schedule.date greaterEq today) and (Schedule.dinningHall eq dinningHallName))}
-            .map {
-                ScheduleItem(
-                    id = it[Schedule.id],
-                    date = it[Schedule.date],
-                    time = it[Schedule.time],
-                    dinningHall = it[Schedule.dinningHall],
-                    active = it[Schedule.active]
-                )
-            }
-    }
-
-    override suspend fun getScheduleItemById(mealId: String): ScheduleItem? = dbQuery {
-        Schedule
-            .select { Schedule.id eq mealId }
-            .map {
-                ScheduleItem(
-                    id = it[Schedule.id],
-                    date = it[Schedule.date],
-                    time = it[Schedule.time],
-                    dinningHall = it[Schedule.dinningHall],
-                    active = it[Schedule.active]
-                )
-            }
-            .singleOrNull()
-    }
-
-    override suspend fun getScheduleItem(scheduleItem: ScheduleItem): ScheduleItem? = dbQuery {
-        Schedule
-            .select { ((Schedule.date eq scheduleItem.date) and (Schedule.time eq scheduleItem.time) and (Schedule.dinningHall eq scheduleItem.dinningHall)) }
-            .map {
-                ScheduleItem(
-                    id = it[Schedule.id],
-                    date = it[Schedule.date],
-                    time = it[Schedule.time],
-                    dinningHall = it[Schedule.dinningHall],
-                    active = it[Schedule.active]
-                )
-            }
-            .singleOrNull()
-    }
-
-    override suspend fun insertScheduleItem(scheduleItem: ScheduleItem): Unit = dbQuery {
-        Schedule
-            .insert {
-                it[id] = scheduleItem.id
-                it[date] = scheduleItem.date
-                it[time] = scheduleItem.time
-                it[dinningHall] = scheduleItem.dinningHall
-                it[active] = scheduleItem.active
-            }
-    }
-
-    override suspend fun activateScheduleItem(days: Long): Unit = dbQuery {
-        val date = LocalDate.now().plusDays(days).toString()
-        Schedule
-            .update({ Schedule.date eq date }){
-                it[active] = true
-            }
-    }
-
-    override suspend fun deleteScheduleItemByDinningHall(dinningHallName: String): Unit = dbQuery {
-        Schedule
-            .deleteWhere { Schedule.dinningHall eq dinningHallName }
-    }
-
-
-    override suspend fun insertReservation(reservation: Reservation): Unit = dbQuery {
+    override suspend fun makeReservation(studentID: Long, scheduleItemId: Long): Long = dbQuery {
         Reservations
             .insert {
-                it[id] = reservation.id
-                it[userId] = reservation.userId
-                it[scheduleItemId] = reservation.scheduleItemId
-                it[date_of_reservation] = reservation.dateOfReservation
-            }
-        updateLast(reservation.userId)
+                it[Reservations.studentID] = studentID
+                it[Reservations.scheduleItemId] = scheduleItemId
+            } get Reservations.id
     }
 
-    override suspend fun deleteReservation(reservationId: String): Unit = dbQuery {
+    override suspend fun getReservationByScheduleItemIdAndUserId(studentID: Long, scheduleItemID: Long): Reservation? = dbQuery {
+        Reservations
+            .select {
+                (Reservations.studentID eq studentID) and
+                        (Reservations.scheduleItemId eq scheduleItemID)
+            }
+            .map {
+                Reservation(
+                    id = it[Reservations.id],
+                    studentID = it[Reservations.studentID],
+                    scheduleItemID = it[Reservations.scheduleItemId],
+                    dateOfReservation = it[Reservations.dateOfReservation]
+                )
+            }
+            .singleOrNull()
+    }
+
+    override suspend fun deleteReservation(reservationId: Long): Unit = dbQuery {
         Reservations
             .deleteWhere { id eq reservationId }
     }
 
-    override suspend fun getReservations(userId: String): List<Reservation> = dbQuery{
+    override suspend fun getReservations(studentID: Long): List<Reservation> = dbQuery {
         Reservations
-            .select { Reservations.userId eq userId }
+            .select { Reservations.studentID eq studentID }
             .map {
                 Reservation(
                     id = it[Reservations.id],
-                    userId = it[Reservations.userId],
-                    scheduleItemId = it[Reservations.scheduleItemId],
-                    dateOfReservation = it[Reservations.date_of_reservation],
+                    studentID = it[Reservations.studentID],
+                    scheduleItemID = it[Reservations.scheduleItemId],
+                    dateOfReservation = it[Reservations.dateOfReservation]
                 )
             }
+            .toList()
     }
 
-    override suspend fun getReservationByMealIdAndUserId(mealId: String, userId: String): Reservation? = dbQuery {
-        Reservations
-            .select { ((Reservations.scheduleItemId eq mealId) and (Reservations.userId eq userId)) }
+    override suspend fun getScheduleItemById(scheduleItemId: Long): ScheduleItem? = dbQuery {
+        Schedule
+            .select { Schedule.id eq scheduleItemId }
             .map {
-                Reservation(
-                    id = it[Reservations.id],
-                    userId = it[Reservations.userId],
-                    scheduleItemId = it[Reservations.scheduleItemId],
-                    dateOfReservation = it[Reservations.date_of_reservation],
+                ScheduleItem(
+                    id = it[Schedule.id],
+                    date = it[Schedule.itemDate],
+                    time = it[Schedule.time],
+                    dinninghallId = it[Schedule.dinninghallId],
+                    available = it[Schedule.available]
                 )
             }
             .singleOrNull()
+    }
+
+    override suspend fun insertScheduleItem(date: LocalDate, time: String, dinninghallID: Long): Unit = dbQuery {
+        Schedule
+            .insert {
+                it[Schedule.itemDate] = date
+                it[Schedule.time] = time
+                it[Schedule.dinninghallId] = dinninghallID
+            }
+    }
+
+    override suspend fun deleteScheduleItem(date: LocalDate, time: String, dinninghallID: Long): Unit = dbQuery {
+        Schedule
+            .deleteWhere {
+                (itemDate eq date) and
+                (Schedule.time eq time) and
+                (dinninghallId eq dinninghallID)
+            }
+    }
+
+    override suspend fun getSchedule(dinninghallID: Long): List<ScheduleItem> = dbQuery {
+        Schedule
+            .select {
+                (Schedule.dinninghallId eq dinninghallID) and
+                (Schedule.itemDate greaterEq LocalDate.now())
+            }
+            .map {
+                ScheduleItem(
+                    id = it[Schedule.id],
+                    date = it[Schedule.itemDate],
+                    time = it[Schedule.time],
+                    dinninghallId = it[Schedule.dinninghallId],
+                    available = it[Schedule.available]
+                )
+            }
+
+    }
+
+    override suspend fun getDinninghallByID(dinninghallID: Long): DinningHall? = dbQuery {
+        Dinninghalls
+            .select { Dinninghalls.id eq dinninghallID }
+            .map {
+                DinningHall(
+                    id = it[Dinninghalls.id],
+                    name = it[Dinninghalls.name]
+                )
+            }
+            .singleOrNull()
+    }
+
+    override suspend fun insertDinninghall(dinninghallName: String): Unit = dbQuery{
+        Dinninghalls
+            .insert {
+                it[name] = dinninghallName
+            }
+    }
+
+    override suspend fun deleteDinninghall(dinninghallID: Long): Unit = dbQuery {
+        Dinninghalls
+            .deleteWhere { id eq dinninghallID }
     }
 }

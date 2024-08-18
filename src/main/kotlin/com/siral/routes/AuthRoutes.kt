@@ -1,11 +1,9 @@
 package com.siral.routes
 
 import com.siral.data.UserService
-import com.siral.data.admin.Admin
 import com.siral.data.student.Student
 import com.siral.request.AuthCredentials
-import com.siral.request.StudentAuthCredentials
-import com.siral.responses.UserAuthResponse
+import com.siral.responses.StudentLoginData
 import com.siral.security.account.verifyAdminCredentials
 import com.siral.security.account.verifyStudentCredentials
 import com.siral.security.token.TokenClaim
@@ -19,9 +17,15 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 
-internal fun Student.toUserAuthResponse(token: String) = UserAuthResponse(
+internal fun Student.toStudentLoginData(token: String) = StudentLoginData(
     id = this.id,
     token = token,
+    name = this.name,
+    code = this.code,
+    email = this.email,
+    resident = this.resident,
+    last = this.last,
+    active = this.active
 )
 
 fun Route.studentLogin(
@@ -29,22 +33,26 @@ fun Route.studentLogin(
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ) {
-    post("/siral/student-login") {
-        val credentials = call.receive<StudentAuthCredentials>()
-        val authResponse = verifyStudentCredentials(credentials, userService)
-        if(!authResponse)
-            return@post call.respond(HttpStatusCode.Conflict, "Invalid Credentials")
-        val foundStudent = userService.getStudentByUsername(credentials.username)
-        val student = Student(
-            username = credentials.username,
-            dinningHall = credentials.dinningHall
-        )
+    post("siral/signin") {
+        val credentials = call.receive<AuthCredentials>()
+
+        // Fake external API validation
+        val authResponse = verifyStudentCredentials(credentials)
+            ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Credentials")
+
+        // Check if the student is already registered
+        val foundStudent = userService.getStudentByEmail(credentials.email)
+
+        val student = foundStudent ?: userService.insertStudent(authResponse).let {
+            userService.getStudentById(it)
+        }
+
         val token = tokenService.generateToken(
             config = tokenConfig,
             claims = arrayOf(
                 TokenClaim(
                     name = "userId",
-                    value = foundStudent?.id ?: student.id,
+                    value = student?.id.toString()
                 ),
                 TokenClaim(
                     name = "userRole",
@@ -52,45 +60,37 @@ fun Route.studentLogin(
                 )
             )
         )
-        if(foundStudent != null)
-            return@post call.respond(HttpStatusCode.OK, foundStudent.toUserAuthResponse(token))
-        userService.insertStudent(student)
-        return@post call.respond(HttpStatusCode.OK, student.toUserAuthResponse(token))
+
+        if (student != null) {
+            return@post call.respond(HttpStatusCode.OK, student.toStudentLoginData(token))
+        } else {
+            return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Student")
+        }
     }
 }
-
-internal fun Admin.toUserAuthResponse(token: String) = UserAuthResponse(
-    id = this.id,
-    token = token,
-)
 
 fun Route.adminLogin(
     userService: UserService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ){
-    post("/siral/admin-login") {
-        val credentials = call.receive<AuthCredentials>()
-        val authResponse = verifyAdminCredentials(credentials, userService)
-        if(!authResponse)
-            return@post call.respond(HttpStatusCode.Conflict, "Invalid Credentials")
-        val admin = userService.getAdminByName(credentials.username)
-            ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Admin")
-        val token = tokenService.generateToken(
-            config = tokenConfig,
-            claims = arrayOf(
-                TokenClaim(
-                    name = "userId",
-                    value = admin.id
-                ),
-                TokenClaim(
-                    name = "userRole",
-                    value = "ADMIN"
-                )
-            )
-        )
-        return@post call.respond(HttpStatusCode.OK, admin.toUserAuthResponse(token))
-    }
+   post("siral/admin-signin") {
+       val credentials = call.receive<AuthCredentials>()
+       if (!verifyAdminCredentials(credentials))
+           return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Credentials")
+
+       val token = tokenService.generateToken(
+           config = tokenConfig,
+           claims = arrayOf(
+               TokenClaim(
+                   name = "userRole",
+                   value = "ADMIN"
+               )
+           )
+       )
+
+       return@post call.respond(HttpStatusCode.OK, token)
+   }
 }
 
 fun Route.auth(){

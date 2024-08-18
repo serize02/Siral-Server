@@ -1,6 +1,5 @@
 package com.siral
 
-import com.siral.cleanup.dbCleanUp
 import com.siral.data.UserService
 import com.siral.plugins.*
 import com.siral.security.token.JwtTokenService
@@ -32,7 +31,6 @@ fun Application.module() {
         secret = System.getenv("jwt-secret")
     )
 
-    dbCleanUp(userService)
     configureSerialization()
     configureSecurity(tokenConfig)
     configureRouting(userService, tokenService, tokenConfig)

@@ -2,7 +2,7 @@ package com.siral.data.student
 
 import java.time.LocalDateTime
 
-data class StudentInfo(
+data class Student(
     val id: Long,
     val name: String,
     val code: Long,

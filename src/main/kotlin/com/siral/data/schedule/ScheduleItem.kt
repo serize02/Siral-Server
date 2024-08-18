@@ -1,13 +1,15 @@
 package com.siral.data.schedule
 
+import com.siral.utils.LocalDateSerializer
 import kotlinx.serialization.Serializable
-import java.util.*
+import java.time.LocalDate
 
 @Serializable
 data class ScheduleItem(
-    val id: String = UUID.randomUUID().toString(),
-    val date: String, //yy-mm-dd
+    val id: Long,
+    @Serializable(with = LocalDateSerializer::class)
+    val date: LocalDate, //yy-mm-dd
     val time: String, //breakfast, lunch, dinner
-    val dinningHall: String,
-    val active: Boolean = false
+    val dinninghallId: Long,
+    val available: Boolean
 )

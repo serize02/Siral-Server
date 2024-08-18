@@ -9,33 +9,36 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.insertReservations(
+fun Route.makeReservations(
     userService: UserService
 ) {
     authenticate {
-        post("/siral/reservations/{id}") {
+        post("/siral/reservations/{scheduleItemID}") {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal?.getClaim("userId", String::class)
-                ?: return@post call.respond(HttpStatusCode.InternalServerError)
+            val userId = principal?.getClaim("userId", Long::class)
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, "User ID not found in token")
+
             val user = userService.getStudentById(userId)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
-            val scheduleItemId = call.parameters["id"]
+
+            val scheduleItemId = call.parameters["scheduleItemID"]?.toLong()
                 ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing Schedule Item ID")
-            val foundScheduleItem = userService.getReservationByMealIdAndUserId(scheduleItemId, userId) //in reservations
-            if(foundScheduleItem == null) {
-                val scheduleItem = userService.getScheduleItemById(scheduleItemId)
-                    ?: return@post call.respond(HttpStatusCode.NotFound, "Meal not found")
-                if(!scheduleItem.active || scheduleItem.dinningHall != user.dinningHall)
-                    return@post call.respond(HttpStatusCode.BadRequest, "This Schedule Item Is Not Available")
-                userService.insertReservation(
-                    Reservation(
-                        userId = userId,
-                        scheduleItemId = scheduleItemId,
-                    )
-                )
-                return@post call.respond(HttpStatusCode.Created, "Reservation Done")
-            }
-            return@post call.respond(HttpStatusCode.BadRequest, "You Already Reserved For This Schedule Item")
+
+            // Check if the user has already reserved this meal
+            val foundScheduleItem = userService.getReservationByScheduleItemIdAndUserId(scheduleItemId, userId)
+            if(foundScheduleItem != null)
+                return@post call.respond(HttpStatusCode.BadRequest, "You have already reserved this meal")
+
+            // Check if the schedule item exists
+            val scheduleItem = userService.getScheduleItemById(scheduleItemId)
+                ?: return@post call.respond(HttpStatusCode.BadRequest, "Schedule Item not found")
+
+            if(!scheduleItem.available)
+                return@post call.respond(HttpStatusCode.BadRequest, "Schedule Item not available")
+
+            userService.makeReservation(userId, scheduleItemId)
+
+            return@post call.respond(HttpStatusCode.OK, "Reservation made")
         }
     }
 }
@@ -45,14 +48,17 @@ fun Route.deleteReservation(
     userService: UserService
 ){
     authenticate {
-        delete("/siral/reservations/{id}") {
+        delete("/siral/reservations/{reservationID}") {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal?.getClaim("userId", String::class)
+            val userId = principal?.getClaim("userId", Long::class)
                 ?: return@delete call.respond(HttpStatusCode.InternalServerError)
+
             val user = userService.getStudentById(userId)
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied")
-            val reservationId = call.parameters["id"]
+
+            val reservationId = call.parameters["reservationID"]?.toLong()
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, "Missing Reservation Id")
+
             userService.deleteReservation(reservationId)
             call.respond(HttpStatusCode.OK, "Reservation Deleted")
         }
@@ -66,11 +72,7 @@ fun Route.getStudentReservations(
     authenticate {
         get("/siral/reservations") {
             val principal = call.principal<JWTPrincipal>()
-            val role = principal?.getClaim("userRole", String::class)
-                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied role")
-            if(role != "STUDENT")
-                return@get call.respond(HttpStatusCode.Unauthorized, "You can't access this route")
-            val userId = principal.getClaim("userId", String::class)
+            val userId = principal?.getClaim("userId", Long::class)
                 ?: return@get call.respond(HttpStatusCode.InternalServerError)
             val user = userService.getStudentById(userId)
                 ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
