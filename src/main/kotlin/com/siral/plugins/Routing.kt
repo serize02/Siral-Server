@@ -22,17 +22,16 @@ fun Application.configureRouting(
     }
     routing {
         studentLogin(userService, tokenService, tokenConfig)
-
+        adminLogin(tokenService, tokenConfig)
         auth()
-
         insertDinningHalls(userService)
         deleteDinningHall(userService)
-
         insertScheduleItem(userService)
-
-
         makeReservations(userService)
         deleteReservation(userService)
         getStudentReservations(userService)
+        insertNewRole(userService)
+        deleteRole(userService)
+        siteManagerSchedulerLogin(userService, tokenService, tokenConfig)
     }
 }

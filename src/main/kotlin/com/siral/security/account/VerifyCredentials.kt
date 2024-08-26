@@ -2,6 +2,7 @@ package com.siral.security.account
 
 import com.siral.data.UserService
 import com.siral.request.AuthCredentials
+import com.siral.request.NewRoleCredentials
 import com.siral.responses.StudentData
 
 fun verifyStudentCredentials(credentials: AuthCredentials): StudentData? {
@@ -34,5 +35,12 @@ fun verifyAdminCredentials(
         return false
     if(credentials.password != pd)
         return false
+    return true
+}
+
+fun verifySiteManagerSchedulerCredentials(
+    credentials: AuthCredentials,
+): Boolean {
+    //verify email and password in the accounts system
     return true
 }

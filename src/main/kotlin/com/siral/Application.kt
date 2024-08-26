@@ -35,5 +35,4 @@ fun Application.module() {
     configureSecurity(tokenConfig)
     configureRouting(userService, tokenService, tokenConfig)
     configureMonitoring()
-
 }
