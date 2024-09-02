@@ -6,8 +6,11 @@ import com.siral.data.reservation.Reservation
 import com.siral.data.reservation.ReservationDataSource
 import com.siral.data.schedule.ScheduleDataSource
 import com.siral.data.schedule.ScheduleItem
+import com.siral.data.sitemanagerscheduler.SiteManagerScheduler
+import com.siral.data.sitemanagerscheduler.SiteManagerSchedulerDataSource
 import com.siral.data.student.Student
 import com.siral.data.student.StudentDataSource
+import com.siral.request.NewRoleCredentials
 import com.siral.responses.StudentData
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
@@ -25,7 +28,8 @@ class UserService(
     StudentDataSource,
     ReservationDataSource,
     ScheduleDataSource,
-    DinninghallDataSource
+    DinninghallDataSource,
+    SiteManagerSchedulerDataSource
 {
     object Students: Table("students") {
         val id = long("id").autoIncrement()
@@ -51,7 +55,7 @@ class UserService(
         val itemDate = date("item_date")
         val time = varchar("time", 50)
         val dinninghallId = reference("dinning_hall_id", Dinninghalls.id)
-        val available = bool("available")
+        val available = bool("available").defaultExpression(booleanLiteral(false))
 
         override val primaryKey = PrimaryKey(id)
     }
@@ -64,22 +68,41 @@ class UserService(
         override val primaryKey = PrimaryKey(id)
     }
 
-
-    object Admins: Table() {
+    object SiteManagerSchedulers: Table() {
         val id = long("id").autoIncrement()
-        val username = varchar("username", 50)
-        override val primaryKey = PrimaryKey(username)
+        val email = varchar("email", 50)
+        val dinninghallID = reference("dinninghall_id", Dinninghalls.id)
+        val role = varchar("role", 50)
+        override val primaryKey = PrimaryKey(id)
     }
-
 
     init {
         transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(Students)
+            SchemaUtils.createMissingTablesAndColumns(Students, Dinninghalls, Schedule, Reservations, SiteManagerSchedulers)
         }
     }
 
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
+
+
+    suspend fun verifyExistentEmail(email: String): Boolean {
+        val emails = dbQuery {
+            Students
+                .select { Students.email eq email }
+                .count()
+                +
+            SiteManagerSchedulers
+                .select { SiteManagerSchedulers.email eq email }
+                .count()
+        }
+        return emails > 0
+    }
+    suspend fun verifyExistentDinninghall(dinninghallName: String): Boolean = dbQuery {
+        Dinninghalls
+            .select { Dinninghalls.name eq dinninghallName }
+            .count() > 0
+    }
 
 
     override suspend fun getStudentByEmail(email: String): Student? = dbQuery {
@@ -221,6 +244,25 @@ class UserService(
 
     }
 
+    override suspend fun getScheduleItem(date: LocalDate, time: String, dinninghallID: Long): ScheduleItem? = dbQuery {
+        Schedule
+            .select {
+                (Schedule.itemDate eq date) and
+                (Schedule.time eq time) and
+                (Schedule.dinninghallId eq dinninghallID)
+            }
+            .map {
+                ScheduleItem(
+                    id = it[Schedule.id],
+                    date = it[Schedule.itemDate],
+                    time = it[Schedule.time],
+                    dinninghallId = it[Schedule.dinninghallId],
+                    available = it[Schedule.available]
+                )
+            }
+            .singleOrNull()
+    }
+
     override suspend fun getDinninghallByID(dinninghallID: Long): DinningHall? = dbQuery {
         Dinninghalls
             .select { Dinninghalls.id eq dinninghallID }
@@ -244,4 +286,49 @@ class UserService(
         Dinninghalls
             .deleteWhere { id eq dinninghallID }
     }
+
+    override suspend fun insertNewSiteManagerScheduler(credentials: NewRoleCredentials): Unit = dbQuery {
+        SiteManagerSchedulers
+            .insert {
+                it[email] = credentials.email
+                it[dinninghallID] = Dinninghalls
+                    .select { Dinninghalls.name eq credentials.dinninghall }
+                    .single()[Dinninghalls.id]
+                it[role] = credentials.role
+            }
+    }
+
+    override suspend fun deleteSiteManagerScheduler(email: String): Unit = dbQuery {
+        SiteManagerSchedulers
+            .deleteWhere { SiteManagerSchedulers.email eq email }
+    }
+
+    override suspend fun getSiteManagerSchedulerByEmail(email: String): SiteManagerScheduler? = dbQuery {
+        SiteManagerSchedulers
+            .select { SiteManagerSchedulers.email eq email }
+            .map {
+                SiteManagerScheduler(
+                    id = it[SiteManagerSchedulers.id],
+                    email = it[SiteManagerSchedulers.email],
+                    dinninghallID = it[SiteManagerSchedulers.dinninghallID],
+                    role = it[SiteManagerSchedulers.role]
+                )
+            }
+            .singleOrNull()
+    }
+
+    override suspend fun getSiteManagerSchedulerByID(id: Long): SiteManagerScheduler? = dbQuery {
+        SiteManagerSchedulers
+            .select { SiteManagerSchedulers.id eq id }
+            .map {
+                SiteManagerScheduler(
+                    id = it[SiteManagerSchedulers.id],
+                    email = it[SiteManagerSchedulers.email],
+                    dinninghallID = it[SiteManagerSchedulers.dinninghallID],
+                    role = it[SiteManagerSchedulers.role]
+                )
+            }
+            .singleOrNull()
+    }
+
 }

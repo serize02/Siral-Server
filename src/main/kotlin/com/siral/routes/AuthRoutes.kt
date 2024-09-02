@@ -5,6 +5,7 @@ import com.siral.data.student.Student
 import com.siral.request.AuthCredentials
 import com.siral.responses.StudentLoginData
 import com.siral.security.account.verifyAdminCredentials
+import com.siral.security.account.verifySiteManagerSchedulerCredentials
 import com.siral.security.account.verifyStudentCredentials
 import com.siral.security.token.TokenClaim
 import com.siral.security.token.TokenConfig
@@ -33,7 +34,7 @@ fun Route.studentLogin(
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ) {
-    post("siral/signin") {
+    post("siral/student-login") {
         val credentials = call.receive<AuthCredentials>()
 
         // Fake external API validation
@@ -70,11 +71,10 @@ fun Route.studentLogin(
 }
 
 fun Route.adminLogin(
-    userService: UserService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ){
-   post("siral/admin-signin") {
+   post("siral/admin-login") {
        val credentials = call.receive<AuthCredentials>()
        if (!verifyAdminCredentials(credentials))
            return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Credentials")
@@ -91,6 +91,39 @@ fun Route.adminLogin(
 
        return@post call.respond(HttpStatusCode.OK, token)
    }
+}
+
+fun Route.siteManagerSchedulerLogin(
+    userService: UserService,
+    tokenService: TokenService,
+    tokenConfig: TokenConfig
+){
+    post("siral/site-manager-scheduler-login") {
+        val credentials = call.receive<AuthCredentials>()
+
+        if(!verifySiteManagerSchedulerCredentials(credentials))
+            return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Credentials")
+
+        val user = userService.getSiteManagerSchedulerByEmail(credentials.email)
+            ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid User")
+
+        val token = tokenService.generateToken(
+            config = tokenConfig,
+            claims = arrayOf(
+                TokenClaim(
+                    name = "userId",
+                    value = user.id.toString()
+                ),
+                TokenClaim(
+                    name = "userRole",
+                    value = user.role
+                )
+            )
+        )
+
+        return@post call.respond(HttpStatusCode.OK, token)
+
+    }
 }
 
 fun Route.auth(){
