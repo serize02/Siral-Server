@@ -48,13 +48,18 @@ fun Route.insertScheduleItem(userService: UserService){
             val request = call.receive<ScheduleItemRequest>()
             if(request.date <= LocalDate.now())
                 return@post call.respond(HttpStatusCode.BadRequest, "You Can't Make An Apoyment For This Date")
-            if(request.breakfast)
-                userService.insertScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
-            if (request.lunch)
-                userService.insertScheduleItem(request.date, "lunch", scheduler.dinninghallID)
-            if (request.dinner)
-                userService.insertScheduleItem(request.date, "dinner", scheduler.dinninghallID)
-
+            if(request.breakfast){
+                val item = userService.getScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
+                    ?: userService.insertScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
+            }
+            if (request.lunch){
+                val item = userService.getScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+                    ?:  userService.insertScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+            }
+            if (request.dinner){
+                val item = userService.getScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+                    ?: userService.insertScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+            }
             return@post call.respond(HttpStatusCode.OK, "All Done")
         }
     }

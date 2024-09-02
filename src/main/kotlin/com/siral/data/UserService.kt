@@ -244,6 +244,25 @@ class UserService(
 
     }
 
+    override suspend fun getScheduleItem(date: LocalDate, time: String, dinninghallID: Long): ScheduleItem? = dbQuery {
+        Schedule
+            .select {
+                (Schedule.itemDate eq date) and
+                (Schedule.time eq time) and
+                (Schedule.dinninghallId eq dinninghallID)
+            }
+            .map {
+                ScheduleItem(
+                    id = it[Schedule.id],
+                    date = it[Schedule.itemDate],
+                    time = it[Schedule.time],
+                    dinninghallId = it[Schedule.dinninghallId],
+                    available = it[Schedule.available]
+                )
+            }
+            .singleOrNull()
+    }
+
     override suspend fun getDinninghallByID(dinninghallID: Long): DinningHall? = dbQuery {
         Dinninghalls
             .select { Dinninghalls.id eq dinninghallID }
