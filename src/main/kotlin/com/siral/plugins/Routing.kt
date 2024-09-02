@@ -9,7 +9,6 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.jetbrains.annotations.ApiStatus.Experimental
 
 fun Application.configureRouting(
     userService: UserService,
@@ -22,21 +21,18 @@ fun Application.configureRouting(
         }
     }
     routing {
-        addAdmins(userService)
-
-        adminLogin(userService, tokenService, tokenConfig)
         studentLogin(userService, tokenService, tokenConfig)
-
+        adminLogin(tokenService, tokenConfig)
         auth()
-
         insertDinningHalls(userService)
         deleteDinningHall(userService)
-
         insertScheduleItem(userService)
-        getScheduleForNextDays(userService)
-
-        insertReservations(userService)
+        deleteScheduleItem(userService)
+        makeReservations(userService)
         deleteReservation(userService)
         getStudentReservations(userService)
+        insertNewRole(userService)
+        deleteRole(userService)
+        siteManagerSchedulerLogin(userService, tokenService, tokenConfig)
     }
 }

@@ -1,10 +1,14 @@
 package com.siral.request
 
+import com.siral.utils.LocalDateSerializer
 import kotlinx.serialization.Serializable
+import java.time.LocalDate
 
 @Serializable
 data class ScheduleItemRequest(
-    val date: String, //yy-mm-dd
-    val time: String, //breakfast, lunch, dinner
-    val dinningHall: String
+    @Serializable(with = LocalDateSerializer::class)
+    val date: LocalDate,
+    val breakfast: Boolean,
+    val lunch: Boolean,
+    val dinner: Boolean
 )

@@ -1,13 +1,14 @@
 package com.siral.data.reservation
 
+import com.siral.utils.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
-import java.util.*
+import java.time.LocalDateTime
 
 @Serializable
 data class Reservation(
-    val id: String = UUID.randomUUID().toString(),
-    val userId: String,
-    val scheduleItemId: String,
-    val dateOfReservation: String = LocalDate.now().toString()
+    val id: Long,
+    val studentID: Long,
+    val scheduleItemID: Long,
+    @Serializable(with = LocalDateTimeSerializer::class)
+    val dateOfReservation: LocalDateTime
 )

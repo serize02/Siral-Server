@@ -3,7 +3,8 @@ package com.siral.request
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AuthCredentials(
+data class NewRoleCredentials(
     val email: String,
-    val password: String,
+    val role: String,
+    val dinninghall: String
 )

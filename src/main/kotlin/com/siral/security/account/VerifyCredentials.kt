@@ -2,28 +2,45 @@ package com.siral.security.account
 
 import com.siral.data.UserService
 import com.siral.request.AuthCredentials
-import com.siral.request.StudentAuthCredentials
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.siral.request.NewRoleCredentials
+import com.siral.responses.StudentData
 
-fun verifyStudentCredentials(
-    credentials: StudentAuthCredentials,
-    userService: UserService
-): Boolean {
-//    TODO("Find the way to verify also this")
-//    val foundDinningHall = userService.getDinningHallByName(credentials.dinningHall)
-//    val validUsernameAndPassword = TODO("Check at the sigenu api")
-    return true
+fun verifyStudentCredentials(credentials: AuthCredentials): StudentData? {
+    // Fake credentials for validation
+    val fakeEmail = "student@example.com"
+    val fakePassword = "password123"
+
+    return if (credentials.email == fakeEmail && credentials.password == fakePassword) {
+        // Return fake student data
+        StudentData(
+            name = "John Doe",
+            code = 12345L,
+            email = fakeEmail,
+            resident = true,
+        )
+    } else {
+        // Return null if credentials do not match
+        null
+    }
 }
 
 fun verifyAdminCredentials(
     credentials: AuthCredentials,
-    userService: UserService
 ): Boolean {
-//    TODO("Find the way to verify also this")
-//    val admin = userService.getAdminByName(credentials.username)
-//    val validUsernameAndPassword = TODO("Check at the asset api")
+
+    val email = System.getenv("adminemail")
+    val pd = System.getenv("adminpd")
+
+    if(credentials.email != email)
+        return false
+    if(credentials.password != pd)
+        return false
+    return true
+}
+
+fun verifySiteManagerSchedulerCredentials(
+    credentials: AuthCredentials,
+): Boolean {
+    //verify email and password in the accounts system
     return true
 }

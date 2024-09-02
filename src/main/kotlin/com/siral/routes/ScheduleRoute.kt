@@ -1,7 +1,6 @@
 package com.siral.routes
 
 import com.siral.data.UserService
-import com.siral.data.schedule.ScheduleItem
 import com.siral.request.ScheduleItemRequest
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -10,54 +9,91 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import java.time.LocalDate
 
-internal fun ScheduleItemRequest.toScheduleItem() = ScheduleItem(
-    date = this.date,
-    time = this.time,
-    dinningHall = this.dinningHall,
-)
 
-fun Route.insertScheduleItem(userService: UserService) {
+fun Route.getSchedule(userService: UserService) {
+    get("siral/schedule/{dinninghallID}") {
+        val dinninghallID = call.parameters["dinninghallID"]?.toLong()
+            ?: return@get call.respond(HttpStatusCode.BadRequest, "Missing Dinning Hall ID")
+        val dinninghall = userService.getDinninghallByID(dinninghallID)
+            ?: return@get call.respond(HttpStatusCode.NotFound, "This Dinning Hall Doest Not Exist")
+        val items = userService.getSchedule(dinninghallID)
+        return@get call.respond(HttpStatusCode.OK, items)
+    }
+}
+
+
+fun Route.insertScheduleItem(userService: UserService){
     authenticate {
-        post("/siral/schedule") {
+        post("siral/schedule") {
             val principal = call.principal<JWTPrincipal>()
-            val role = principal?.getClaim("userRole", String::class)
-                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied role")
-            if(role != "ADMIN")
-                return@post call.respond(HttpStatusCode.Unauthorized, "You can't access this route")
-            val adminId = principal.getClaim("userId", String::class)
                 ?: return@post call.respond(HttpStatusCode.InternalServerError)
-            val admin = userService.getAdminById(adminId)
-                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
-            val request = call.receive<List<ScheduleItemRequest>>()
-            val schedule = request.map {it.toScheduleItem()}
-            schedule.forEach {
-                val dinninghall = userService.getDinningHallByName(it.dinningHall)
-                    ?: return@post call.respond(HttpStatusCode.BadRequest, "This Dinning Hall Doesn't Exist")
-                val scheduleItem = userService.getScheduleItem(it)
-                    ?: userService.insertScheduleItem(it)
+
+            val role = principal.getClaim(name = "userRole", String::class)
+                ?: return@post call.respond(HttpStatusCode.InternalServerError)
+
+            if(role != "SCHEDULER")
+                return@post call.respond(HttpStatusCode.Unauthorized, "Access Denied")
+
+            val schedulerId = principal.getClaim(name = "userId", Long::class)
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, "Scheduler ID is null")
+
+            val scheduler = userService.getSiteManagerSchedulerByID(schedulerId)
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, "Scheduler not found")
+
+            val dinninghall = userService.getDinninghallByID(scheduler.dinninghallID)
+                ?: return@post call.respond(HttpStatusCode.NotFound, "This Dinning Hall Doest Not Exist")
+
+            val request = call.receive<ScheduleItemRequest>()
+            if(request.date <= LocalDate.now())
+                return@post call.respond(HttpStatusCode.BadRequest, "You Can't Make An Apoyment For This Date")
+            if(request.breakfast){
+                val item = userService.getScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
+                    ?: userService.insertScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
             }
-            return@post call.respond(HttpStatusCode.OK, "Schedule Updated Successfully")
+            if (request.lunch){
+                val item = userService.getScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+                    ?:  userService.insertScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+            }
+            if (request.dinner){
+                val item = userService.getScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+                    ?: userService.insertScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+            }
+            return@post call.respond(HttpStatusCode.OK, "All Done")
         }
     }
 }
 
-@Suppress("IMPLICIT_CAST_TO_ANY")
-fun Route.getScheduleForNextDays(userService: UserService) {
+fun Route.deleteScheduleItem(userService: UserService){
     authenticate {
-        get("/siral/schedule/{dinningHallName}") {
+        delete("siral/schedule") {
             val principal = call.principal<JWTPrincipal>()
-            // it can be an admin or a student
-            val userId = principal?.getClaim("userId", String::class)
-                ?: return@get call.respond(HttpStatusCode.InternalServerError)
-            val role = principal.getClaim("userRole", String::class)
-                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
-            val user = if(role == "ADMIN") userService.getAdminById(userId) else userService.getStudentById(userId)
-                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
-            val dinningHallName = call.parameters["dinningHallName"]
-                ?: return@get call.respond(HttpStatusCode.BadRequest, "DinningHall Name is required")
-            val scheduleItems = userService.getScheduleForTheNextDays(dinningHallName)
-            return@get call.respond(HttpStatusCode.OK, scheduleItems)
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError)
+
+            val role = principal.getClaim(name = "userRole", String::class)
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError)
+
+            if(role != "SCHEDULER")
+                return@delete call.respond(HttpStatusCode.Unauthorized, "Access Denied")
+
+            val schedulerId = principal.getClaim(name = "userId", Long::class)
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError, "Scheduler ID is null")
+
+            val scheduler = userService.getSiteManagerSchedulerByID(schedulerId)
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError, "Scheduler not found")
+
+            val dinninghall = userService.getDinninghallByID(scheduler.dinninghallID)
+                ?: return@delete call.respond(HttpStatusCode.NotFound, "This Dinning Hall Doest Not Exist")
+
+            val request = call.receive<ScheduleItemRequest>()
+            if (request.breakfast)
+                userService.deleteScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
+            if (request.lunch)
+                userService.deleteScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+            if (request.dinner)
+                userService.deleteScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+            return@delete call.respond(HttpStatusCode.OK, "All Done")
         }
     }
 }
