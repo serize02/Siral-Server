@@ -1,0 +1,1 @@
+![Alt text](https://github.com/serize02/Siral-Server/blob/exposed-database/src/main/kotlin/com/siral/docs/captures/siral_database_config.png)
