@@ -15,9 +15,17 @@ fun Route.makeReservations(
     authenticate {
         post("/siral/reservations/{scheduleItemID}") {
             val principal = call.principal<JWTPrincipal>()
+
             val userId = principal?.getClaim("userId", Long::class)
                 ?: return@post call.respond(HttpStatusCode.InternalServerError, "User ID not found in token")
 
+            val role = principal.getClaim("userRole", String::class)
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
+
+            if(role != "STUDENT")
+                return@post call.respond(HttpStatusCode.Unauthorized, "Access Denied")
+
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
             val user = userService.getStudentById(userId)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
 
@@ -51,7 +59,13 @@ fun Route.deleteReservation(
         delete("/siral/reservations/{reservationID}") {
             val principal = call.principal<JWTPrincipal>()
             val userId = principal?.getClaim("userId", Long::class)
-                ?: return@delete call.respond(HttpStatusCode.InternalServerError)
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError, "ID not found in token")
+
+            val role = principal.getClaim("userRole", String::class)
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
+
+            if(role != "STUDENT")
+                return@delete call.respond(HttpStatusCode.Unauthorized, "Access Denied")
 
             val user = userService.getStudentById(userId)
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied")
@@ -73,7 +87,14 @@ fun Route.getStudentReservations(
         get("/siral/reservations") {
             val principal = call.principal<JWTPrincipal>()
             val userId = principal?.getClaim("userId", Long::class)
-                ?: return@get call.respond(HttpStatusCode.InternalServerError)
+                ?: return@get call.respond(HttpStatusCode.InternalServerError, "ID not found in token")
+
+            val role = principal.getClaim("userRole", String::class)
+                ?: return@get call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
+
+            if(role != "STUDENT")
+                return@get call.respond(HttpStatusCode.Unauthorized, "Access Denied")
+
             val user = userService.getStudentById(userId)
                 ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
             val reservations = userService.getReservations(userId)
