@@ -27,6 +27,7 @@ fun Application.configureRouting(
         insertDinningHalls(userService)
         deleteDinningHall(userService)
         insertScheduleItem(userService)
+        deleteScheduleItem(userService)
         makeReservations(userService)
         deleteReservation(userService)
         getStudentReservations(userService)
