@@ -43,4 +43,8 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql:42.4.2")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
     implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
+    implementation(kotlin("stdlib-jdk8"))
+}
+kotlin {
+    jvmToolchain(21)
 }
