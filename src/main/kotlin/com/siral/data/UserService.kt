@@ -76,9 +76,22 @@ class UserService(
         override val primaryKey = PrimaryKey(id)
     }
 
+    object Logs: Table(){
+        val id = long("id").autoIncrement()
+        val userID = reference("user_id", Students.id)
+        val action = varchar("action", 50)
+        val timestamp = datetime("timestamp").defaultExpression(CurrentDateTime)
+    }
+
     init {
         transaction(database) {
-            SchemaUtils.createMissingTablesAndColumns(Students, Dinninghalls, Schedule, Reservations, SiteManagerSchedulers)
+            SchemaUtils.createMissingTablesAndColumns(
+                Students,
+                Dinninghalls,
+                Schedule,
+                Reservations,
+                SiteManagerSchedulers
+            )
         }
     }
 
