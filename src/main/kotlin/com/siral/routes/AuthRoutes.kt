@@ -10,6 +10,8 @@ import com.siral.security.account.verifyStudentCredentials
 import com.siral.security.token.TokenClaim
 import com.siral.security.token.TokenConfig
 import com.siral.security.token.TokenService
+import com.siral.utils.Actions
+import com.siral.utils.Status
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -63,14 +65,16 @@ fun Route.studentLogin(
         )
 
         if (student != null) {
+            userService.addLog(student.email, Actions.LOGIN, Status.SUCCESSFUL)
             return@post call.respond(HttpStatusCode.OK, student.toStudentLoginData(token))
-        } else {
-            return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Student")
         }
+
+        return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Student")
     }
 }
 
 fun Route.adminLogin(
+    userService: UserService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ){
@@ -88,7 +92,7 @@ fun Route.adminLogin(
                )
            )
        )
-
+       userService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
        return@post call.respond(HttpStatusCode.OK, token)
    }
 }
@@ -121,6 +125,7 @@ fun Route.siteManagerSchedulerLogin(
             )
         )
 
+        userService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
         return@post call.respond(HttpStatusCode.OK, token)
 
     }

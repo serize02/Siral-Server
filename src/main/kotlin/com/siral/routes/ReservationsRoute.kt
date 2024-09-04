@@ -2,6 +2,8 @@ package com.siral.routes
 
 import com.siral.data.UserService
 import com.siral.data.reservation.Reservation
+import com.siral.utils.Actions
+import com.siral.utils.Status
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -32,19 +34,26 @@ fun Route.makeReservations(
             val scheduleItemId = call.parameters["scheduleItemID"]?.toLong()
                 ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing Schedule Item ID")
 
-            // Check if the user has already reserved this meal
             val foundScheduleItem = userService.getReservationByScheduleItemIdAndUserId(scheduleItemId, userId)
-            if(foundScheduleItem != null)
+            if(foundScheduleItem != null){
+                userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.FAILED)
                 return@post call.respond(HttpStatusCode.BadRequest, "You have already reserved this meal")
+            }
 
             // Check if the schedule item exists
             val scheduleItem = userService.getScheduleItemById(scheduleItemId)
-                ?: return@post call.respond(HttpStatusCode.BadRequest, "Schedule Item not found")
+                ?: run {
+                    userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.FAILED)
+                    return@post call.respond(HttpStatusCode.BadRequest, "Schedule Item not found")
+                }
 
-            if(!scheduleItem.available)
+            if(!scheduleItem.available){
+                userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.FAILED)
                 return@post call.respond(HttpStatusCode.BadRequest, "Schedule Item not available")
+            }
 
             userService.makeReservation(userId, scheduleItemId)
+            userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.SUCCESSFUL)
 
             return@post call.respond(HttpStatusCode.OK, "Reservation made")
         }
@@ -71,9 +80,12 @@ fun Route.deleteReservation(
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied")
 
             val reservationId = call.parameters["reservationID"]?.toLong()
-                ?: return@delete call.respond(HttpStatusCode.BadRequest, "Missing Reservation Id")
-
+                ?: run {
+                    userService.addLog(user.email, Actions.DELETE_RESERVATION, Status.FAILED)
+                    return@delete call.respond(HttpStatusCode.BadRequest, "Missing Reservation Id")
+                }
             userService.deleteReservation(reservationId)
+            userService.addLog(user.email, Actions.DELETE_RESERVATION, Status.SUCCESSFUL)
             call.respond(HttpStatusCode.OK, "Reservation Deleted")
         }
     }

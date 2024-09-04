@@ -15,6 +15,7 @@ import com.siral.data.student.StudentDataSource
 import com.siral.request.NewRoleCredentials
 import com.siral.responses.StudentData
 import com.siral.utils.Actions
+import com.siral.utils.Status
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -95,7 +96,8 @@ class UserService(
                 Dinninghalls,
                 Schedule,
                 Reservations,
-                SiteManagerSchedulers
+                SiteManagerSchedulers,
+                Logs
             )
         }
     }
@@ -305,6 +307,18 @@ class UserService(
             .deleteWhere { id eq dinninghallID }
     }
 
+    override suspend fun getDinninghallByName(dinninghallName: String): DinningHall? = dbQuery {
+        Dinninghalls
+            .select { Dinninghalls.name eq dinninghallName }
+            .map {
+                DinningHall(
+                    id = it[Dinninghalls.id],
+                    name = it[Dinninghalls.name]
+                )
+            }
+            .singleOrNull()
+    }
+
     override suspend fun insertNewSiteManagerScheduler(credentials: NewRoleCredentials): Unit = dbQuery {
         SiteManagerSchedulers
             .insert {
@@ -363,11 +377,12 @@ class UserService(
             }
     }
 
-    override suspend fun addLog(email: String, action: Actions): Unit = dbQuery {
+    override suspend fun addLog(email: String, action: Actions, status: Status): Unit = dbQuery {
         Logs
             .insert {
                 it[Logs.email] = email
                 it[Logs.action] = action.type
+                it[Logs.status] = status.type
             }
     }
 

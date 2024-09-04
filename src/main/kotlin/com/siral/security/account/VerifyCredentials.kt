@@ -4,6 +4,7 @@ import com.siral.data.UserService
 import com.siral.request.AuthCredentials
 import com.siral.request.NewRoleCredentials
 import com.siral.responses.StudentData
+import com.siral.utils.Admin
 
 fun verifyStudentCredentials(credentials: AuthCredentials): StudentData? {
     // Fake credentials for validation
@@ -28,12 +29,10 @@ fun verifyAdminCredentials(
     credentials: AuthCredentials,
 ): Boolean {
 
-    val email = System.getenv("adminemail")
-    val pd = System.getenv("adminpd")
 
-    if(credentials.email != email)
+    if(credentials.email != Admin.email)
         return false
-    if(credentials.password != pd)
+    if(credentials.password != Admin.password)
         return false
     return true
 }
