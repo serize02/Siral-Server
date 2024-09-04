@@ -11,6 +11,7 @@ import com.siral.security.token.TokenClaim
 import com.siral.security.token.TokenConfig
 import com.siral.security.token.TokenService
 import com.siral.utils.Actions
+import com.siral.utils.ResponseMessage
 import com.siral.utils.Status
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -41,7 +42,7 @@ fun Route.studentLogin(
 
         // Fake external API validation
         val authResponse = verifyStudentCredentials(credentials)
-            ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Credentials")
+            ?: return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
         // Check if the student is already registered
         val foundStudent = userService.getStudentByEmail(credentials.email)
@@ -69,7 +70,7 @@ fun Route.studentLogin(
             return@post call.respond(HttpStatusCode.OK, student.toStudentLoginData(token))
         }
 
-        return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Student")
+        return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_STUDENT)
     }
 }
 
@@ -81,7 +82,7 @@ fun Route.adminLogin(
    post("siral/admin-login") {
        val credentials = call.receive<AuthCredentials>()
        if (!verifyAdminCredentials(credentials))
-           return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Credentials")
+           return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
        val token = tokenService.generateToken(
            config = tokenConfig,
@@ -106,7 +107,7 @@ fun Route.siteManagerSchedulerLogin(
         val credentials = call.receive<AuthCredentials>()
 
         if(!verifySiteManagerSchedulerCredentials(credentials))
-            return@post call.respond(HttpStatusCode.Unauthorized, "Invalid Credentials")
+            return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
         val user = userService.getSiteManagerSchedulerByEmail(credentials.email)
             ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid User")
