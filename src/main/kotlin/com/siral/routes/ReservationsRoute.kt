@@ -1,8 +1,8 @@
 package com.siral.routes
 
 import com.siral.data.UserService
-import com.siral.data.reservation.Reservation
 import com.siral.utils.Actions
+import com.siral.utils.ResponseMessage
 import com.siral.utils.Status
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -17,45 +17,46 @@ fun Route.makeReservations(
     authenticate {
         post("/siral/reservations/{scheduleItemID}") {
             val principal = call.principal<JWTPrincipal>()
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, ResponseMessage.SOMETHING_WENT_WRONG)
 
             val userId = principal?.getClaim("userId", Long::class)
-                ?: return@post call.respond(HttpStatusCode.InternalServerError, "User ID not found in token")
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, ResponseMessage.ID_NOT_FOUND_IN_TOKEN)
 
             val role = principal.getClaim("userRole", String::class)
-                ?: return@post call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
+                ?: return@post call.respond(HttpStatusCode.InternalServerError, ResponseMessage.ROLE_NOT_FOUND_IN_TOKEN)
 
             if(role != "STUDENT")
-                return@post call.respond(HttpStatusCode.Unauthorized, "Access Denied")
+                return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
 
                 ?: return@post call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
             val user = userService.getStudentById(userId)
-                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Access denied")
+                ?: return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
 
             val scheduleItemId = call.parameters["scheduleItemID"]?.toLong()
-                ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing Schedule Item ID")
+                ?: return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_SCHEDULE_ITEM_ID)
 
-            val foundScheduleItem = userService.getReservationByScheduleItemIdAndUserId(scheduleItemId, userId)
-            if(foundScheduleItem != null){
+            val foundReservation = userService.getReservationByScheduleItemIdAndUserId(scheduleItemId, userId)
+            if(foundReservation != null){
                 userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.FAILED)
-                return@post call.respond(HttpStatusCode.BadRequest, "You have already reserved this meal")
+                return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.MEAL_ALREADY_RESERVED)
             }
 
             // Check if the schedule item exists
             val scheduleItem = userService.getScheduleItemById(scheduleItemId)
                 ?: run {
                     userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.FAILED)
-                    return@post call.respond(HttpStatusCode.BadRequest, "Schedule Item not found")
+                    return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.SCHEDULE_ITEM_NOT_FOUND)
                 }
 
             if(!scheduleItem.available){
                 userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.FAILED)
-                return@post call.respond(HttpStatusCode.BadRequest, "Schedule Item not available")
+                return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.SCHEDULE_ITEM_NOT_AVAILABLE)
             }
 
             userService.makeReservation(userId, scheduleItemId)
             userService.addLog(user.email, Actions.MAKE_RESERVATION, Status.SUCCESSFUL)
 
-            return@post call.respond(HttpStatusCode.OK, "Reservation made")
+            return@post call.respond(HttpStatusCode.OK, ResponseMessage.RESERVATION_MADE)
         }
     }
 }
@@ -67,26 +68,27 @@ fun Route.deleteReservation(
     authenticate {
         delete("/siral/reservations/{reservationID}") {
             val principal = call.principal<JWTPrincipal>()
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError, ResponseMessage.SOMETHING_WENT_WRONG)
             val userId = principal?.getClaim("userId", Long::class)
-                ?: return@delete call.respond(HttpStatusCode.InternalServerError, "ID not found in token")
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError, ResponseMessage.ID_NOT_FOUND_IN_TOKEN)
 
             val role = principal.getClaim("userRole", String::class)
-                ?: return@delete call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
+                ?: return@delete call.respond(HttpStatusCode.InternalServerError, ResponseMessage.ROLE_NOT_FOUND_IN_TOKEN)
 
             if(role != "STUDENT")
-                return@delete call.respond(HttpStatusCode.Unauthorized, "Access Denied")
+                return@delete call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
 
             val user = userService.getStudentById(userId)
-                ?: return@delete call.respond(HttpStatusCode.Unauthorized, "Access denied")
+                ?: return@delete call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
 
             val reservationId = call.parameters["reservationID"]?.toLong()
                 ?: run {
                     userService.addLog(user.email, Actions.DELETE_RESERVATION, Status.FAILED)
-                    return@delete call.respond(HttpStatusCode.BadRequest, "Missing Reservation Id")
+                    return@delete call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_RESERVATION_ID)
                 }
             userService.deleteReservation(reservationId)
             userService.addLog(user.email, Actions.DELETE_RESERVATION, Status.SUCCESSFUL)
-            call.respond(HttpStatusCode.OK, "Reservation Deleted")
+            call.respond(HttpStatusCode.OK, ResponseMessage.RESERVATION_DELETED)
         }
     }
 }
@@ -98,17 +100,18 @@ fun Route.getStudentReservations(
     authenticate {
         get("/siral/reservations") {
             val principal = call.principal<JWTPrincipal>()
-            val userId = principal?.getClaim("userId", Long::class)
-                ?: return@get call.respond(HttpStatusCode.InternalServerError, "ID not found in token")
+                ?: return@get call.respond(HttpStatusCode.InternalServerError, ResponseMessage.SOMETHING_WENT_WRONG)
+            val userId = principal.getClaim("userId", Long::class)
+                ?: return@get call.respond(HttpStatusCode.InternalServerError, ResponseMessage.ID_NOT_FOUND_IN_TOKEN)
 
             val role = principal.getClaim("userRole", String::class)
-                ?: return@get call.respond(HttpStatusCode.InternalServerError, "Role not found in token")
+                ?: return@get call.respond(HttpStatusCode.InternalServerError, ResponseMessage.ROLE_NOT_FOUND_IN_TOKEN)
 
             if(role != "STUDENT")
-                return@get call.respond(HttpStatusCode.Unauthorized, "Access Denied")
+                return@get call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
 
             val user = userService.getStudentById(userId)
-                ?: return@get call.respond(HttpStatusCode.Unauthorized, "Access denied")
+                ?: return@get call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
             val reservations = userService.getReservations(userId)
             return@get call.respond(HttpStatusCode.OK, reservations)
         }
