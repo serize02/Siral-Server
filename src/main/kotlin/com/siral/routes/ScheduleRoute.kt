@@ -2,6 +2,8 @@ package com.siral.routes
 
 import com.siral.data.UserService
 import com.siral.request.ScheduleItemRequest
+import com.siral.utils.Actions
+import com.siral.utils.Status
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -43,11 +45,16 @@ fun Route.insertScheduleItem(userService: UserService){
                 ?: return@post call.respond(HttpStatusCode.InternalServerError, "Scheduler not found")
 
             val dinninghall = userService.getDinninghallByID(scheduler.dinninghallID)
-                ?: return@post call.respond(HttpStatusCode.NotFound, "This Dinning Hall Doest Not Exist")
-
+                ?: run {
+                    userService.addLog(scheduler.email, Actions.INSERT_SCHEDULE_ITEM, Status.FAILED)
+                    return@post call.respond(HttpStatusCode.NotFound, "This Dinning Hall Doest Not Exist")
+                }
             val request = call.receive<ScheduleItemRequest>()
-            if(request.date <= LocalDate.now())
+            if(request.date <= LocalDate.now()){
+                userService.addLog(scheduler.email, Actions.INSERT_SCHEDULE_ITEM, Status.FAILED)
                 return@post call.respond(HttpStatusCode.BadRequest, "You Can't Make An Apoyment For This Date")
+            }
+
             if(request.breakfast){
                 val item = userService.getScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
                     ?: userService.insertScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
@@ -60,6 +67,7 @@ fun Route.insertScheduleItem(userService: UserService){
                 val item = userService.getScheduleItem(request.date, "dinner", scheduler.dinninghallID)
                     ?: userService.insertScheduleItem(request.date, "dinner", scheduler.dinninghallID)
             }
+            userService.addLog(scheduler.email, Actions.INSERT_SCHEDULE_ITEM, Status.SUCCESSFUL)
             return@post call.respond(HttpStatusCode.OK, "All Done")
         }
     }
@@ -84,8 +92,10 @@ fun Route.deleteScheduleItem(userService: UserService){
                 ?: return@delete call.respond(HttpStatusCode.InternalServerError, "Scheduler not found")
 
             val dinninghall = userService.getDinninghallByID(scheduler.dinninghallID)
-                ?: return@delete call.respond(HttpStatusCode.NotFound, "This Dinning Hall Doest Not Exist")
-
+                ?: run {
+                    userService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.FAILED)
+                    return@delete call.respond(HttpStatusCode.NotFound, "This Dinning Hall Doest Not Exist")
+                }
             val request = call.receive<ScheduleItemRequest>()
             if (request.breakfast)
                 userService.deleteScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
@@ -93,6 +103,8 @@ fun Route.deleteScheduleItem(userService: UserService){
                 userService.deleteScheduleItem(request.date, "lunch", scheduler.dinninghallID)
             if (request.dinner)
                 userService.deleteScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+
+            userService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
             return@delete call.respond(HttpStatusCode.OK, "All Done")
         }
     }
