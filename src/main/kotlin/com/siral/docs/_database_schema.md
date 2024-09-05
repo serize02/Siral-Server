@@ -42,6 +42,13 @@
 ### Relationships
 - `dinninghallID` references `Dinninghalls.id`.
 
+## Table `Logs`
+- **id**: Unique identifier of the log entry (Primary Key).
+- **email**: Email of the user who performed the action.
+- **action**: Action performed by the user.
+- **status**: Status of the action.
+- **timestamp**: Timestamp of when the action was performed.
+
 ## Relationship Diagram
 
 ```mermaid
@@ -77,6 +84,13 @@ erDiagram
         varchar email
         long dinninghallID
         varchar role
+    }
+    Logs {
+        long id
+        varchar email
+        varchar action
+        varchar status
+        datetime timestamp
     }
 
     Students ||--o{ Reservations: "has"
