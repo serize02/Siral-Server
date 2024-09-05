@@ -395,8 +395,8 @@ class UserService(
         Logs
             .insert {
                 it[Logs.email] = email
-                it[Logs.action] = action.type
-                it[Logs.status] = status.type
+                it[Logs.action] = action.name
+                it[Logs.status] = status.name
             }
     }
 
