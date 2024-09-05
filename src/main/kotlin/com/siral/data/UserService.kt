@@ -213,6 +213,20 @@ class UserService(
             .toList()
     }
 
+    override suspend fun getReservationByID(reservationId: Long): Reservation? = dbQuery {
+        Reservations
+            .select { Reservations.id eq reservationId }
+            .map {
+                Reservation(
+                    id = it[Reservations.id],
+                    studentID = it[Reservations.studentID],
+                    scheduleItemID = it[Reservations.scheduleItemId],
+                    dateOfReservation = it[Reservations.dateOfReservation]
+                )
+            }
+            .singleOrNull()
+    }
+
     override suspend fun getScheduleItemById(scheduleItemId: Long): ScheduleItem? = dbQuery {
         Schedule
             .select { Schedule.id eq scheduleItemId }

@@ -31,4 +31,6 @@ enum class ResponseMessage(val message: String) {
     RESERVATION_DELETED("Reservation Deleted"),
     INVALID_DATE("Invalid Date"),
     ALL_DONE("All Done"),
+    MISSING_STUDENT_ID("Missing Student ID"),
+    RESERVATION_NOT_FOUND("Reservation Not Found"),
 }

@@ -13,6 +13,7 @@ import com.siral.security.token.TokenService
 import com.siral.utils.Actions
 import com.siral.utils.ResponseMessage
 import com.siral.utils.Status
+import com.siral.utils.UserRole
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -60,7 +61,7 @@ fun Route.studentLogin(
                 ),
                 TokenClaim(
                     name = "userRole",
-                    value = "STUDENT"
+                    value = UserRole.STUDENT.toString()
                 )
             )
         )
@@ -79,23 +80,23 @@ fun Route.adminLogin(
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ){
-   post("siral/admin-login") {
-       val credentials = call.receive<AuthCredentials>()
-       if (!verifyAdminCredentials(credentials))
-           return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
+    post("siral/admin-login") {
+        val credentials = call.receive<AuthCredentials>()
+        if (!verifyAdminCredentials(credentials))
+            return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
-       val token = tokenService.generateToken(
-           config = tokenConfig,
-           claims = arrayOf(
-               TokenClaim(
-                   name = "userRole",
-                   value = "ADMIN"
-               )
-           )
-       )
-       userService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
-       return@post call.respond(HttpStatusCode.OK, token)
-   }
+        val token = tokenService.generateToken(
+            config = tokenConfig,
+            claims = arrayOf(
+                TokenClaim(
+                    name = "userRole",
+                    value = UserRole.ADMIN.toString()
+                )
+            )
+        )
+        userService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
+        return@post call.respond(HttpStatusCode.OK, token)
+    }
 }
 
 fun Route.siteManagerSchedulerLogin(
@@ -134,7 +135,7 @@ fun Route.siteManagerSchedulerLogin(
 
 fun Route.auth(){
     authenticate {
-        get("/auth") {
+        get("/siral/auth") {
             return@get call.respond(HttpStatusCode.OK)
         }
     }
