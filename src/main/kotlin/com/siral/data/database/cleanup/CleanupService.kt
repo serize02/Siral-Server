@@ -41,10 +41,10 @@ class CleanupService(): CleanupDataSource {
     override suspend fun updateAvailableScheduleItems(): Unit = dbQuery {
         val config = AvailabilityConfigs
             .selectAll()
-            .associate { it[Dinninghalls.id] to it[AvailabilityConfigs.daysBefore] }
+            .associate { it[AvailabilityConfigs.dinninghallId] to it[AvailabilityConfigs.daysBefore] }
         for((dinningHallId, daysBefore) in config) {
             Schedule
-                .update({ (Schedule.dinninghallId eq dinningHallId) and (Schedule.itemDate eq LocalDate.now().minusDays(daysBefore.toLong())) }) {
+                .update({ (Schedule.dinninghallId eq dinningHallId) and (Schedule.itemDate eq LocalDate.now().plusDays(daysBefore.toLong())) }) {
                     it[available] = true
                 }
         }
