@@ -1,8 +1,7 @@
 package com.siral.data.services
 
 
-import com.siral.data.database.tables.AvailabilityConfigs
-import com.siral.data.database.tables.Dinninghalls
+import com.siral.data.database.tables.*
 import com.siral.data.database.tables.Dinninghalls.id
 import com.siral.data.models.DinningHall
 import com.siral.data.interfaces.DinningHallDataSource
@@ -37,6 +36,15 @@ class DinningHallService(private val db: Database): DinningHallDataSource {
     }
 
     override suspend fun deleteDinninghall(dinninghallID: Long): Unit = dbQuery {
+        SiteManagerSchedulers.deleteWhere { SiteManagerSchedulers.dinninghallID eq dinninghallID }
+        AvailabilityConfigs.deleteWhere { AvailabilityConfigs.dinninghallId eq dinninghallID }
+        Schedule
+            .select { Schedule.dinninghallId eq dinninghallID }
+            .toList()
+            .forEach { item ->
+                Reservations.deleteWhere { Reservations.scheduleItemId eq item[Schedule.id] }
+            }
+        Schedule.deleteWhere { Schedule.dinninghallId eq dinninghallID }
         Dinninghalls.deleteWhere { id eq dinninghallID }
     }
 
