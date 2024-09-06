@@ -1,5 +1,6 @@
 package com.siral
 
+import com.siral.data.DatabaseFactory
 import com.siral.data.UserService
 import com.siral.plugins.*
 import com.siral.security.token.JwtTokenService
@@ -13,12 +14,7 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
 
-    val database = Database.connect(
-        url = "jdbc:postgresql://localhost:5432/siraldb",
-        user = System.getenv("dbuser"),
-        driver = "org.postgresql.Driver",
-        password = System.getenv("dbpassword")
-    )
+    val database = DatabaseFactory.init()
 
     val userService = UserService(database)
 
