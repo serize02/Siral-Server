@@ -85,7 +85,7 @@ fun Route.deleteScheduleItem(dataService: DataService){
 
             if (request.breakfast){
                 val item = dataService.scheduleService.getScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
-                if(item == null){
+                if(item != null){
                     dataService.scheduleService.deleteScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
                     dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
                 } else dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.FAILED)
@@ -93,7 +93,7 @@ fun Route.deleteScheduleItem(dataService: DataService){
 
             if (request.lunch){
                 val item = dataService.scheduleService.getScheduleItem(request.date, "lunch", scheduler.dinninghallID)
-                if(item == null) {
+                if(item != null) {
                     dataService.scheduleService.deleteScheduleItem(request.date, "lunch", scheduler.dinninghallID)
                     dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
                 } else dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.FAILED)
@@ -101,7 +101,7 @@ fun Route.deleteScheduleItem(dataService: DataService){
 
             if (request.dinner){
                 val item = dataService.scheduleService.getScheduleItem(request.date, "dinner", scheduler.dinninghallID)
-                if(item == null) {
+                if(item != null) {
                     dataService.scheduleService.deleteScheduleItem(request.date, "dinner", scheduler.dinninghallID)
                     dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
                 } else dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.FAILED)

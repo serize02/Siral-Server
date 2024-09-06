@@ -52,7 +52,6 @@ fun Route.makeReservations(
     }
 }
 
-
 fun Route.deleteReservation(
     dataService: DataService
 ){
@@ -83,7 +82,6 @@ fun Route.deleteReservation(
     }
 
 }
-
 
 fun Route.getStudentReservations(
     userService: DataService

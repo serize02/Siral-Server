@@ -41,8 +41,10 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
 
     override suspend fun deleteScheduleItem(date: LocalDate, time: String, dinninghallID: Long): Unit = dbQuery {
         val item = getScheduleItem(date, time, dinninghallID)
-        Reservations.deleteWhere { Reservations.scheduleItemId eq item?.id!!}
-        Schedule.deleteWhere {Reservations.id eq item!!.id}
+        if (item != null) {
+            Reservations.deleteWhere { scheduleItemId eq item.id}
+            Schedule.deleteWhere {Schedule.id eq item.id}
+        }
     }
 
     override suspend fun getSchedule(dinninghallID: Long): List<ScheduleItem> = dbQuery {
