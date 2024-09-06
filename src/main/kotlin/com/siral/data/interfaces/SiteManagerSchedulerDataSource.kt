@@ -1,5 +1,6 @@
-package com.siral.data.sitemanagerscheduler
+package com.siral.data.interfaces
 
+import com.siral.data.models.SiteManagerScheduler
 import com.siral.request.NewRoleCredentials
 
 interface SiteManagerSchedulerDataSource {

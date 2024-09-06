@@ -1,4 +1,4 @@
-package com.siral.data.schedule
+package com.siral.data.models
 
 import com.siral.utils.LocalDateSerializer
 import kotlinx.serialization.Serializable

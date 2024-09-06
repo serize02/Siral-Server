@@ -1,4 +1,4 @@
-package com.siral.data.sitemanagerscheduler
+package com.siral.data.models
 
 data class SiteManagerScheduler(
     val id: Long,

@@ -1,7 +1,7 @@
 package com.siral.routes
 
-import com.siral.data.UserService
-import com.siral.data.student.Student
+import com.siral.data.DataService
+import com.siral.data.models.Student
 import com.siral.request.AuthCredentials
 import com.siral.responses.StudentLoginData
 import com.siral.security.account.verifyAdminCredentials
@@ -34,7 +34,7 @@ internal fun Student.toStudentLoginData(token: String) = StudentLoginData(
 )
 
 fun Route.studentLogin(
-    userService: UserService,
+    dataService: DataService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ) {
@@ -46,10 +46,10 @@ fun Route.studentLogin(
             ?: return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
         // Check if the student is already registered
-        val foundStudent = userService.getStudentByEmail(credentials.email)
+        val foundStudent = dataService.studentService.getStudentByEmail(credentials.email)
 
-        val student = foundStudent ?: userService.insertStudent(authResponse).let {
-            userService.getStudentById(it)
+        val student = foundStudent ?: dataService.studentService.insertStudent(authResponse).let {
+            dataService.studentService.getStudentById(it)
         }
 
         val token = tokenService.generateToken(
@@ -67,7 +67,7 @@ fun Route.studentLogin(
         )
 
         if (student != null) {
-            userService.addLog(student.email, Actions.LOGIN, Status.SUCCESSFUL)
+            dataService.logsService.addLog(student.email, Actions.LOGIN, Status.SUCCESSFUL)
             return@post call.respond(HttpStatusCode.OK, student.toStudentLoginData(token))
         }
 
@@ -76,7 +76,7 @@ fun Route.studentLogin(
 }
 
 fun Route.adminLogin(
-    userService: UserService,
+    dataService: DataService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ){
@@ -94,13 +94,13 @@ fun Route.adminLogin(
                 )
             )
         )
-        userService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
+        dataService.logsService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
         return@post call.respond(HttpStatusCode.OK, token)
     }
 }
 
 fun Route.siteManagerSchedulerLogin(
-    userService: UserService,
+    dataService: DataService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ){
@@ -110,7 +110,7 @@ fun Route.siteManagerSchedulerLogin(
         if(!verifySiteManagerSchedulerCredentials(credentials))
             return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
-        val user = userService.getSiteManagerSchedulerByEmail(credentials.email)
+        val user = dataService.siteManagerSchedulerService.getSiteManagerSchedulerByEmail(credentials.email)
             ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid User")
 
         val token = tokenService.generateToken(
@@ -127,7 +127,7 @@ fun Route.siteManagerSchedulerLogin(
             )
         )
 
-        userService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
+        dataService.logsService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
         return@post call.respond(HttpStatusCode.OK, token)
 
     }

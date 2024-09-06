@@ -1,4 +1,6 @@
-package com.siral.data.reservation
+package com.siral.data.interfaces
+
+import com.siral.data.models.Reservation
 
 
 interface ReservationDataSource {

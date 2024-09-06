@@ -1,5 +1,6 @@
-package com.siral.data.student
+package com.siral.data.interfaces
 
+import com.siral.data.models.Student
 import com.siral.responses.StudentData
 
 interface StudentDataSource {

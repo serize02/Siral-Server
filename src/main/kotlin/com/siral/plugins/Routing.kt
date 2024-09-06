@@ -1,6 +1,6 @@
 package com.siral.plugins
 
-import com.siral.data.UserService
+import com.siral.data.DataService
 import com.siral.routes.*
 import com.siral.security.token.TokenConfig
 import com.siral.security.token.TokenService
@@ -15,7 +15,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting(
-    userService: UserService,
+    dataService: DataService,
     tokenService: TokenService,
     tokenConfig: TokenConfig
 ) {
@@ -26,26 +26,26 @@ fun Application.configureRouting(
     }
     routing {
 
-        studentLogin(userService, tokenService, tokenConfig)
-        adminLogin(userService, tokenService, tokenConfig)
+        studentLogin(dataService, tokenService, tokenConfig)
+        adminLogin(dataService, tokenService, tokenConfig)
         auth()
-        siteManagerSchedulerLogin(userService, tokenService, tokenConfig)
+        siteManagerSchedulerLogin(dataService, tokenService, tokenConfig)
 
 
         authenticate {
-            getSchedule(userService)
+            getSchedule(dataService)
 
-            insertDinningHalls(userService)
-            deleteDinningHall(userService)
-            insertNewRole(userService)
-            deleteRole(userService)
+            insertDinningHalls(dataService)
+            deleteDinningHall(dataService)
+            insertNewRole(dataService)
+            deleteRole(dataService)
 
-            insertScheduleItem(userService)
-            deleteScheduleItem(userService)
+            insertScheduleItem(dataService)
+            deleteScheduleItem(dataService)
 
-            makeReservations(userService)
-            deleteReservation(userService)
-            getStudentReservations(userService)
+            makeReservations(dataService)
+            deleteReservation(dataService)
+            getStudentReservations(dataService)
 
         }
     }

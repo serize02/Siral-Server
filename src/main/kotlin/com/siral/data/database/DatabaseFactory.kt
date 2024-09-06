@@ -1,4 +1,4 @@
-package com.siral.data
+package com.siral.data.database
 
 import org.jetbrains.exposed.sql.Database
 

@@ -1,5 +1,6 @@
-package com.siral.data.schedule
+package com.siral.data.interfaces
 
+import com.siral.data.models.ScheduleItem
 import java.time.LocalDate
 
 interface ScheduleDataSource {
