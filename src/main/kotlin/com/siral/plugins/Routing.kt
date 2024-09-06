@@ -47,7 +47,6 @@ fun Application.configureRouting(
             makeReservations(dataService)
             deleteReservation(dataService)
             getStudentReservations(dataService)
-
         }
     }
 }
