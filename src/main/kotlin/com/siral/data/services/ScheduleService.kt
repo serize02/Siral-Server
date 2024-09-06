@@ -1,5 +1,6 @@
 package com.siral.data.services
 
+import com.siral.data.database.tables.Reservations
 import com.siral.data.database.tables.Schedule
 import com.siral.data.interfaces.ScheduleDataSource
 import com.siral.data.models.ScheduleItem
@@ -39,12 +40,11 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
     }
 
     override suspend fun deleteScheduleItem(date: LocalDate, time: String, dinninghallID: Long): Unit = dbQuery {
-        Schedule
-            .deleteWhere {
-                (itemDate eq date) and
-                        (Schedule.time eq time) and
-                        (dinninghallId eq dinninghallID)
-            }
+        val item = getScheduleItem(date, time, dinninghallID)
+        if (item != null) {
+            Reservations.deleteWhere { scheduleItemId eq item.id}
+            Schedule.deleteWhere {Schedule.id eq item.id}
+        }
     }
 
     override suspend fun getSchedule(dinninghallID: Long): List<ScheduleItem> = dbQuery {

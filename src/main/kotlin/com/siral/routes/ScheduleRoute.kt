@@ -73,7 +73,7 @@ fun Route.deleteScheduleItem(dataService: DataService){
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_REQUIRED_FIELDS)
 
             val scheduler = dataService.siteManagerSchedulerService.getSiteManagerSchedulerByID(schedulerId)
-                ?: return@delete call.respond(HttpStatusCode.InternalServerError, ResponseMessage.USER_NOT_FOUND)
+                ?: return@delete call.respond(HttpStatusCode.NotFound, ResponseMessage.USER_NOT_FOUND)
 
             dataService.dinningHallService.getDinninghallByID(scheduler.dinninghallID)
                 ?: run {
@@ -83,18 +83,31 @@ fun Route.deleteScheduleItem(dataService: DataService){
 
             val request = call.receive<ScheduleItemRequest>()
 
-            if (request.breakfast)
-                dataService.scheduleService.deleteScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
+            if (request.breakfast){
+                val item = dataService.scheduleService.getScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
+                if(item != null){
+                    dataService.scheduleService.deleteScheduleItem(request.date, "breakfast", scheduler.dinninghallID)
+                    dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
+                } else dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.FAILED)
+            }
 
-            if (request.lunch)
-                dataService.scheduleService.deleteScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+            if (request.lunch){
+                val item = dataService.scheduleService.getScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+                if(item != null) {
+                    dataService.scheduleService.deleteScheduleItem(request.date, "lunch", scheduler.dinninghallID)
+                    dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
+                } else dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.FAILED)
+            }
 
-            if (request.dinner)
-                dataService.scheduleService.deleteScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+            if (request.dinner){
+                val item = dataService.scheduleService.getScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+                if(item != null) {
+                    dataService.scheduleService.deleteScheduleItem(request.date, "dinner", scheduler.dinninghallID)
+                    dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
+                } else dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.FAILED)
+            }
 
-            dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
             return@delete call.respond(HttpStatusCode.OK, ResponseMessage.ALL_DONE)
-
         }
     }
 }
