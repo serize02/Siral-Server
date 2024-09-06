@@ -42,6 +42,7 @@ fun Application.configureRouting(
 
             insertScheduleItem(dataService)
             deleteScheduleItem(dataService)
+            daysBefore(dataService)
 
             makeReservations(dataService)
             deleteReservation(dataService)

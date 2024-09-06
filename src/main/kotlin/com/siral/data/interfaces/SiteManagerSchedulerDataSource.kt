@@ -8,4 +8,5 @@ interface SiteManagerSchedulerDataSource {
     suspend fun deleteSiteManagerScheduler(email: String)
     suspend fun getSiteManagerSchedulerByEmail(email: String): SiteManagerScheduler?
     suspend fun getSiteManagerSchedulerByID(id: Long): SiteManagerScheduler?
+    suspend fun updateDaysBeforeReservation(dinninghallId: Long, days: Int)
 }
