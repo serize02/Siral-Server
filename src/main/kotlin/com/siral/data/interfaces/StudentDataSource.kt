@@ -7,4 +7,5 @@ interface StudentDataSource {
     suspend fun getStudentByEmail(email: String): Student?
     suspend fun getStudentById(studentId: Long): Student?
     suspend fun insertStudent(student: StudentData): Long
+    suspend fun updateStudentLastAndActive(studentId: Long)
 }

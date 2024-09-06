@@ -1,16 +1,14 @@
 package com.siral.data.services
 
+import com.siral.data.database.tables.AvailabilityConfigs
 import com.siral.data.database.tables.Dinninghalls
 import com.siral.data.database.tables.SiteManagerSchedulers
 import com.siral.data.models.SiteManagerScheduler
 import com.siral.data.interfaces.SiteManagerSchedulerDataSource
 import com.siral.request.NewRoleCredentials
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedulerDataSource {
@@ -60,5 +58,12 @@ class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedule
                 )
             }
             .singleOrNull()
+    }
+
+    override suspend fun updateDaysBeforeReservation(dinninghallId: Long, days: Int): Unit = dbQuery {
+        AvailabilityConfigs
+            .update({ AvailabilityConfigs.dinninghallId eq dinninghallId }) {
+                it[daysBefore] = days
+            }
     }
 }

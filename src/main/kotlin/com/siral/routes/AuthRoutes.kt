@@ -52,6 +52,8 @@ fun Route.studentLogin(
             dataService.studentService.getStudentById(it)
         }
 
+        student?.let { it1 -> dataService.studentService.updateStudentLastAndActive(it1.id) }
+
         val token = tokenService.generateToken(
             config = tokenConfig,
             claims = arrayOf(

@@ -3,10 +3,7 @@ package com.siral.routes
 import com.siral.data.DataService
 import com.siral.plugins.withRole
 import com.siral.request.ScheduleItemRequest
-import com.siral.utils.Actions
-import com.siral.utils.ResponseMessage
-import com.siral.utils.Status
-import com.siral.utils.UserRole
+import com.siral.utils.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -98,6 +95,36 @@ fun Route.deleteScheduleItem(dataService: DataService){
             dataService.logsService.addLog(scheduler.email, Actions.DELETE_SCHEDULE_ITEM, Status.SUCCESSFUL)
             return@delete call.respond(HttpStatusCode.OK, ResponseMessage.ALL_DONE)
 
+        }
+    }
+}
+
+fun Route.daysBefore(dataService: DataService){
+    put("siral/schedule/availability/{schedulerID}/{days}") {
+        call.withRole(UserRole.SCHEDULER){
+            val schedulerId = call.parameters["schedulerID"]?.toLong()
+                ?: return@put call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_REQUIRED_FIELDS)
+
+            val scheduler = dataService.siteManagerSchedulerService.getSiteManagerSchedulerByID(schedulerId)
+                ?: return@put call.respond(HttpStatusCode.InternalServerError, ResponseMessage.USER_NOT_FOUND)
+
+            dataService.dinningHallService.getDinninghallByID(scheduler.dinninghallID)
+                ?: run {
+                    dataService.logsService.addLog(scheduler.email, Actions.UPDATE_SCHEDULE_AVAILABILITY, Status.FAILED)
+                    return@put call.respond(HttpStatusCode.NotFound, ResponseMessage.DINNING_HALL_NOT_FOUND)
+                }
+
+            val days = call.parameters["days"]?.toInt()
+                ?: return@put call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_REQUIRED_FIELDS)
+
+            if (DayRanges.days.contains(days).not()){
+                dataService.logsService.addLog(scheduler.email, Actions.UPDATE_SCHEDULE_AVAILABILITY, Status.FAILED)
+                return@put call.respond(HttpStatusCode.BadRequest, ResponseMessage.INVALID_DAYS)
+            }
+
+            dataService.siteManagerSchedulerService.updateDaysBeforeReservation(scheduler.dinninghallID, days)
+            dataService.logsService.addLog(scheduler.email, Actions.UPDATE_SCHEDULE_AVAILABILITY, Status.SUCCESSFUL)
+            return@put call.respond(HttpStatusCode.OK, ResponseMessage.ALL_DONE)
         }
     }
 }
