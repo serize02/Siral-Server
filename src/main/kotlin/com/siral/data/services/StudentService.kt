@@ -6,9 +6,12 @@ import com.siral.data.interfaces.StudentDataSource
 import com.siral.responses.StudentData
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.update
+import java.time.LocalDateTime
 
 class StudentService(private val db: Database): StudentDataSource {
 
@@ -57,5 +60,13 @@ class StudentService(private val db: Database): StudentDataSource {
                 )
             }
             .singleOrNull()
+    }
+
+    override suspend fun updateStudentLastAndActive(studentId: Long): Unit = dbQuery {
+        Students
+            .update({ Students.id eq studentId }) {
+                it[last] = LocalDateTime.now()
+                it[active] = true
+            }
     }
 }
