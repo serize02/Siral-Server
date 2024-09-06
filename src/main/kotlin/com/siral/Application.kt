@@ -27,6 +27,9 @@ fun Application.module() {
         while (true) {
             cleanupService.cleanOldLogs()
             cleanupService.cleanExpiredReservations()
+            cleanupService.cleanOldStudents()
+            cleanupService.updateNoActiveStudents()
+            cleanupService.updateAvailableScheduleItems()
             kotlinx.coroutines.delay(24 * 60 * 60 * 1000)
         }
     }
