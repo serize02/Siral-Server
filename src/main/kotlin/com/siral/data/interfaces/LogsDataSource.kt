@@ -1,5 +1,6 @@
-package com.siral.data.logs
+package com.siral.data.interfaces
 
+import com.siral.data.models.Log
 import com.siral.utils.Actions
 import com.siral.utils.Status
 

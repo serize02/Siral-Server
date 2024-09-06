@@ -1,6 +1,8 @@
-package com.siral.data.dinninghall
+package com.siral.data.interfaces
 
-interface DinninghallDataSource {
+import com.siral.data.models.DinningHall
+
+interface DinningHallDataSource {
     suspend fun getDinninghallByID(dinninghallID: Long): DinningHall?
     suspend fun insertDinninghall(dinninghallName: String)
     suspend fun deleteDinninghall(dinninghallID: Long)

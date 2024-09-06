@@ -1,4 +1,4 @@
-package com.siral.data.student
+package com.siral.data.models
 
 import java.time.LocalDateTime
 

@@ -1,6 +1,6 @@
 package com.siral.routes
 
-import com.siral.data.UserService
+import com.siral.data.DataService
 import com.siral.plugins.withRole
 import com.siral.utils.Actions
 import com.siral.utils.ResponseMessage
@@ -12,39 +12,39 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Route.makeReservations(
-    userService: UserService
+    dataService: DataService
 ) {
     post("/siral/reservations/{studentID}/{scheduleItemID}") {
         call.withRole(UserRole.STUDENT){
             val studentID = call.parameters["studentID"]?.toLong()
                 ?: return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_STUDENT_ID)
 
-            val student = userService.getStudentById(studentID)
+            val student = dataService.studentService.getStudentById(studentID)
                 ?: return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
 
             val scheduleItemId = call.parameters["scheduleItemID"]?.toLong()
                 ?: return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_SCHEDULE_ITEM_ID)
 
-            val foundReservation = userService.getReservationByScheduleItemIdAndUserId(scheduleItemId, studentID)
+            val foundReservation = dataService.reservationService.getReservationByScheduleItemIdAndUserId(scheduleItemId, studentID)
             if(foundReservation != null){
-                userService.addLog(student.email, Actions.MAKE_RESERVATION, Status.FAILED)
+                dataService.logsService.addLog(student.email, Actions.MAKE_RESERVATION, Status.FAILED)
                 return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.MEAL_ALREADY_RESERVED)
             }
 
             // Check if the schedule item exists
-            val scheduleItem = userService.getScheduleItemById(scheduleItemId)
+            val scheduleItem = dataService.scheduleService.getScheduleItemById(scheduleItemId)
                 ?: run {
-                    userService.addLog(student.email, Actions.MAKE_RESERVATION, Status.FAILED)
+                    dataService.logsService.addLog(student.email, Actions.MAKE_RESERVATION, Status.FAILED)
                     return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.SCHEDULE_ITEM_NOT_FOUND)
                 }
 
             if(!scheduleItem.available){
-                userService.addLog(student.email, Actions.MAKE_RESERVATION, Status.FAILED)
+                dataService.logsService.addLog(student.email, Actions.MAKE_RESERVATION, Status.FAILED)
                 return@post call.respond(HttpStatusCode.BadRequest, ResponseMessage.SCHEDULE_ITEM_NOT_AVAILABLE)
             }
 
-            userService.makeReservation(studentID, scheduleItemId)
-            userService.addLog(student.email, Actions.MAKE_RESERVATION, Status.SUCCESSFUL)
+            dataService.reservationService.makeReservation(studentID, scheduleItemId)
+            dataService.logsService.addLog(student.email, Actions.MAKE_RESERVATION, Status.SUCCESSFUL)
 
             return@post call.respond(HttpStatusCode.OK, ResponseMessage.RESERVATION_MADE)
 
@@ -55,30 +55,30 @@ fun Route.makeReservations(
 
 
 fun Route.deleteReservation(
-    userService: UserService
+    dataService: DataService
 ){
     delete("/siral/reservations/{studentID}/{reservationID}") {
         call.withRole(UserRole.STUDENT){
             val studentID = call.parameters["studentID"]?.toLong()
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_STUDENT_ID)
 
-            val student = userService.getStudentById(studentID)
+            val student = dataService.studentService.getStudentById(studentID)
                 ?: return@delete call.respond(HttpStatusCode.Unauthorized, ResponseMessage.ACCESS_DENIED)
 
             val reservationId = call.parameters["reservationID"]?.toLong()
                 ?: run {
-                    userService.addLog(student.email, Actions.DELETE_RESERVATION, Status.FAILED)
+                    dataService.logsService.addLog(student.email, Actions.DELETE_RESERVATION, Status.FAILED)
                     return@delete call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_RESERVATION_ID)
                 }
 
-            userService.getReservationByID(reservationId)
+            dataService.reservationService.getReservationByID(reservationId)
                 ?: run {
-                    userService.addLog(student.email, Actions.DELETE_RESERVATION, Status.FAILED)
+                    dataService.logsService.addLog(student.email, Actions.DELETE_RESERVATION, Status.FAILED)
                     return@delete call.respond(HttpStatusCode.BadRequest, ResponseMessage.RESERVATION_NOT_FOUND)
                 }
 
-            userService.deleteReservation(reservationId)
-            userService.addLog(student.email, Actions.DELETE_RESERVATION, Status.SUCCESSFUL)
+            dataService.reservationService.deleteReservation(reservationId)
+            dataService.logsService.addLog(student.email, Actions.DELETE_RESERVATION, Status.SUCCESSFUL)
             return@delete call.respond(HttpStatusCode.OK, ResponseMessage.RESERVATION_DELETED)
         }
     }
@@ -87,13 +87,13 @@ fun Route.deleteReservation(
 
 
 fun Route.getStudentReservations(
-    userService: UserService
+    userService: DataService
 ){
     get("/siral/reservations/{studentID}") {
         call.withRole(UserRole.STUDENT){
             val studentID = call.parameters["studentID"]?.toLong()
                 ?: return@get call.respond(HttpStatusCode.BadRequest, ResponseMessage.MISSING_REQUIRED_FIELDS)
-            val reservations = userService.getReservations(studentID)
+            val reservations = userService.reservationService.getReservations(studentID)
             return@get call.respond(HttpStatusCode.OK, reservations)
         }
     }

@@ -1,4 +1,4 @@
-package com.siral.data.reservation
+package com.siral.data.models
 
 import com.siral.utils.LocalDateTimeSerializer
 import kotlinx.serialization.Serializable

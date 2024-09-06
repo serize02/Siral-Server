@@ -1,6 +1,4 @@
-package com.siral.data.dinninghall
-
-import java.util.*
+package com.siral.data.models
 
 data class DinningHall(
     val id: Long,
