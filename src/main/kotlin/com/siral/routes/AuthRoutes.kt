@@ -39,41 +39,45 @@ fun Route.studentLogin(
     tokenConfig: TokenConfig
 ) {
     post("siral/student-login") {
-        val credentials = call.receive<AuthCredentials>()
+        try {
+            val credentials = call.receive<AuthCredentials>()
 
-        // Fake external API validation
-        val authResponse = verifyStudentCredentials(credentials)
-            ?: return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
+            // Fake external API validation
+            val authResponse = verifyStudentCredentials(credentials)
+                ?: return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
-        // Check if the student is already registered
-        val foundStudent = dataService.studentService.getStudentByEmail(credentials.email)
+            // Check if the student is already registered
+            val foundStudent = dataService.studentService.getStudentByEmail(credentials.email)
 
-        val student = foundStudent ?: dataService.studentService.insertStudent(authResponse).let {
-            dataService.studentService.getStudentById(it)
-        }
+            val student = foundStudent ?: dataService.studentService.insertStudent(authResponse).let {
+                dataService.studentService.getStudentById(it)
+            }
 
-        student?.let { it1 -> dataService.studentService.updateStudentLastAndActive(it1.id) }
+            student?.let { it1 -> dataService.studentService.updateStudentLastAndActive(it1.id) }
 
-        val token = tokenService.generateToken(
-            config = tokenConfig,
-            claims = arrayOf(
-                TokenClaim(
-                    name = "userId",
-                    value = student?.id.toString()
-                ),
-                TokenClaim(
-                    name = "userRole",
-                    value = UserRole.STUDENT.toString()
+            val token = tokenService.generateToken(
+                config = tokenConfig,
+                claims = arrayOf(
+                    TokenClaim(
+                        name = "userId",
+                        value = student?.id.toString()
+                    ),
+                    TokenClaim(
+                        name = "userRole",
+                        value = UserRole.STUDENT.toString()
+                    )
                 )
             )
-        )
 
-        if (student != null) {
-            dataService.logsService.addLog(student.email, Actions.LOGIN, Status.SUCCESSFUL)
-            return@post call.respond(HttpStatusCode.OK, student.toStudentLoginData(token))
+            if (student != null) {
+                dataService.logsService.addLog(student.email, Actions.LOGIN, Status.SUCCESSFUL)
+                return@post call.respond(HttpStatusCode.OK, student.toStudentLoginData(token))
+            }
+
+            return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_STUDENT)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, ResponseMessage.SOMETHING_WENT_WRONG)
         }
-
-        return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_STUDENT)
     }
 }
 
@@ -83,21 +87,25 @@ fun Route.adminLogin(
     tokenConfig: TokenConfig
 ){
     post("siral/admin-login") {
-        val credentials = call.receive<AuthCredentials>()
-        if (!verifyAdminCredentials(credentials))
-            return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
+        try {
+            val credentials = call.receive<AuthCredentials>()
+            if (!verifyAdminCredentials(credentials))
+                return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
-        val token = tokenService.generateToken(
-            config = tokenConfig,
-            claims = arrayOf(
-                TokenClaim(
-                    name = "userRole",
-                    value = UserRole.ADMIN.toString()
+            val token = tokenService.generateToken(
+                config = tokenConfig,
+                claims = arrayOf(
+                    TokenClaim(
+                        name = "userRole",
+                        value = UserRole.ADMIN.toString()
+                    )
                 )
             )
-        )
-        dataService.logsService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
-        return@post call.respond(HttpStatusCode.OK, token)
+            dataService.logsService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
+            return@post call.respond(HttpStatusCode.OK, token)
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, ResponseMessage.SOMETHING_WENT_WRONG)
+        }
     }
 }
 
@@ -107,31 +115,35 @@ fun Route.siteManagerSchedulerLogin(
     tokenConfig: TokenConfig
 ){
     post("siral/site-manager-scheduler-login") {
-        val credentials = call.receive<AuthCredentials>()
+        try {
+            val credentials = call.receive<AuthCredentials>()
 
-        if(!verifySiteManagerSchedulerCredentials(credentials))
-            return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
+            if(!verifySiteManagerSchedulerCredentials(credentials))
+                return@post call.respond(HttpStatusCode.Unauthorized, ResponseMessage.INVALID_CREDENTIALS)
 
-        val user = dataService.siteManagerSchedulerService.getSiteManagerSchedulerByEmail(credentials.email)
-            ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid User")
+            val user = dataService.siteManagerSchedulerService.getSiteManagerSchedulerByEmail(credentials.email)
+                ?: return@post call.respond(HttpStatusCode.Unauthorized, "Invalid User")
 
-        val token = tokenService.generateToken(
-            config = tokenConfig,
-            claims = arrayOf(
-                TokenClaim(
-                    name = "userId",
-                    value = user.id.toString()
-                ),
-                TokenClaim(
-                    name = "userRole",
-                    value = user.role
+            val token = tokenService.generateToken(
+                config = tokenConfig,
+                claims = arrayOf(
+                    TokenClaim(
+                        name = "userId",
+                        value = user.id.toString()
+                    ),
+                    TokenClaim(
+                        name = "userRole",
+                        value = user.role
+                    )
                 )
             )
-        )
 
-        dataService.logsService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
-        return@post call.respond(HttpStatusCode.OK, token)
+            dataService.logsService.addLog(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
+            return@post call.respond(HttpStatusCode.OK, token)
 
+        } catch (e: Exception) {
+            call.respond(HttpStatusCode.InternalServerError, ResponseMessage.SOMETHING_WENT_WRONG)
+        }
     }
 }
 

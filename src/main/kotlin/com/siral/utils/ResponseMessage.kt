@@ -31,4 +31,5 @@ enum class ResponseMessage {
     MISSING_STUDENT_ID,
     RESERVATION_NOT_FOUND,
     INVALID_DAYS,
+    SOMETHING_WENT_WRONG,
 }
