@@ -2,14 +2,16 @@ package com.siral
 
 import com.siral.data.database.DatabaseFactory
 import com.siral.data.DataService
+import com.siral.data.database.cleanup.CleanerHandler
 import com.siral.data.database.cleanup.CleanupService
 import com.siral.plugins.*
 import com.siral.security.token.JwtTokenService
 import com.siral.security.token.TokenConfig
 import io.ktor.server.application.*
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
+const val DAY_DELAY = 24L * 60 * 60 * 1000
 
 fun main(args: Array<String>) {
     io.ktor.server.netty.EngineMain.main(args)
@@ -23,15 +25,16 @@ fun Application.module() {
 
     val cleanupService = CleanupService()
 
-    val cleanJob = CoroutineScope(Dispatchers.Default).launch {
-        while (true) {
-            cleanupService.cleanOldLogs()
-            cleanupService.cleanExpiredReservations()
-            cleanupService.cleanOldStudents()
-            cleanupService.updateNoActiveStudents()
-            cleanupService.updateAvailableScheduleItems()
-            kotlinx.coroutines.delay(24 * 60 * 60 * 1000)
-        }
+    val cleaner = CleanerHandler(listOf(
+        { cleanupService.cleanOldLogs() },
+        { cleanupService.cleanExpiredReservations() },
+        { cleanupService.cleanOldStudents() },
+        { cleanupService.updateNoActiveStudents() },
+        { cleanupService.updateAvailableScheduleItems() }
+    ))
+
+    launch(Dispatchers.Default) {
+        cleaner.start(DAY_DELAY)
     }
 
     val tokenService = JwtTokenService()
@@ -39,7 +42,7 @@ fun Application.module() {
     val tokenConfig = TokenConfig(
         issuer = environment.config.property("jwt.issuer").getString(),
         audience = environment.config.property("jwt.audience").getString(),
-        expiresIn = 365L * 24L * 60L * 60L * 500L,
+        expiresIn = DAY_DELAY,
         secret = System.getenv("jwt-secret")
     )
 
@@ -47,5 +50,4 @@ fun Application.module() {
     configureSecurity(tokenConfig)
     configureRouting(dataService, tokenService, tokenConfig)
     configureMonitoring()
-
 }
