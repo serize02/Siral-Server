@@ -1,0 +1,284 @@
+{
+	"info": {
+		"_postman_id": "b373e0e5-8f5a-4d54-931d-139e5549bca7",
+		"name": "siral",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "34509560"
+	},
+	"item": [
+		{
+			"name": "Login",
+			"item": [
+				{
+					"name": "Student Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"student@example.com\",\r\n    \"password\": \"password123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://127.0.0.1:8080/siral/student-login"
+					},
+					"response": []
+				},
+				{
+					"name": "Admin Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@uclv.cu\",\r\n    \"password\": \"admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://127.0.0.1:8080/siral/admin-login"
+					},
+					"response": []
+				},
+				{
+					"name": "Site Manager and Scheduler Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"scheduler-central@uclv.cu\",\r\n    \"password\": \"123\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://127.0.0.1:8080/siral/site-manager-scheduler-login"
+					},
+					"response": []
+				}
+			],
+			"description": "All login endpoints for every role in the app"
+		},
+		{
+			"name": "Site Manager and Scheduler",
+			"item": [
+				{
+					"name": "Insert New Site Manager or Scheduler",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTI4MjUyNywidXNlclJvbGUiOiJBRE1JTiJ9.kyO322Te3l26oCgANaLFwETVXSgijZ7-S6WWKthQ5S8"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"scheduler-varela@uclv.cu\",\r\n    \"role\": \"SCHEDULER\",\r\n    \"dinninghall\": \"Varela\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://127.0.0.1:8080/siral/insert-new-role"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Site Manager or Scheduler",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTcyODE3OTIzNSwidXNlclJvbGUiOiJBRE1JTiJ9.NFqbRerX0pbCsxBH0DOBRDl-BvVGt4I0OL8RhOmK_20"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/delete-role/scheduler2-varela@uclv.cu"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dinning Halls",
+			"item": [
+				{
+					"name": "Insert Dinning Hall",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTM4ODYyOSwidXNlclJvbGUiOiJBRE1JTiJ9.EL3dNeoTFWmuI8g0pDphWxm1cPjk_pOni6nwDdqbXnQ"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/dinninghalls/Varela"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Dinning Hall",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTM4ODYyOSwidXNlclJvbGUiOiJBRE1JTiJ9.EL3dNeoTFWmuI8g0pDphWxm1cPjk_pOni6nwDdqbXnQ"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/dinninghalls/8"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Schedule",
+			"item": [
+				{
+					"name": "Insert Schedule Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTE4OTM1MSwidXNlcklkIjoiMyIsInVzZXJSb2xlIjoiU0NIRURVTEVSIn0.i4Bn-wkf8kJu_7xs17Hhw9aEIZs0pQvlJZCoTJZCWOA"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2024-09-08\",\r\n    \"breakfast\": true,\r\n    \"lunch\": true,\r\n    \"dinner\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://127.0.0.1:8080/siral/schedule/4"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Schedule Item",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTM5MjkxOSwidXNlcklkIjoiNCIsInVzZXJSb2xlIjoiU0NIRURVTEVSIn0.8gnyzMEGfpVMHVgiyFqmbo4sIQaSXs5PuUcIvufwQ1s"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"date\": \"2024-09-08\",\r\n    \"breakfast\": true,\r\n    \"lunch\": true,\r\n    \"dinner\": true\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://127.0.0.1:8080/siral/schedule/4"
+					},
+					"response": []
+				},
+				{
+					"name": "Get  Dinning Hall Schedule",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/schedule/1"
+					},
+					"response": []
+				},
+				{
+					"name": "Change Days Before Reservation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTM4OTcyNiwidXNlcklkIjoiNCIsInVzZXJSb2xlIjoiU0NIRURVTEVSIn0.0GvwYOTo1QaO6HDQevZrcAxcN3HW5Zm3m-fqZ0_oBdM"
+							}
+						},
+						"method": "PUT",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/schedule/availability/4/2"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "Make Reservation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTM5MDQwNSwidXNlcklkIjoiMSIsInVzZXJSb2xlIjoiU1RVREVOVCJ9.bFZRqo3xt2EkgRE01QZDUgKWhQ8DAqCyCxoJAKxu7QQ"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/reservations/1/29"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Reservation",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJ1c2VycyIsImlzcyI6Imh0dHBzOi8vc2lyYWwtc2VydmVyLyIsImV4cCI6MTc0MTA0MzQxMCwidXNlcklkIjoiMSIsInVzZXJSb2xlIjoiU1RVREVOVCJ9.K3nTTx-iydP3CZTn5i3OBgZgrMG74PxOYDqZTdjMblY"
+							}
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/reservations/1/12"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Data",
+			"item": [
+				{
+					"name": "Get Logs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/logs"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://127.0.0.1:8080/siral/data"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
