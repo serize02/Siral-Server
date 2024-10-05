@@ -3,7 +3,6 @@ package com.siral.data.database.cleanup
 import com.siral.data.database.tables.*
 import com.siral.data.interfaces.CleanupDataSource
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere

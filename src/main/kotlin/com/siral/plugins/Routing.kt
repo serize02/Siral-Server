@@ -30,7 +30,7 @@ fun Application.configureRouting(
         adminLogin(dataService, tokenService, tokenConfig)
         auth()
         siteManagerSchedulerLogin(dataService, tokenService, tokenConfig)
-
+        getAllLogs(dataService)
 
         authenticate {
             getSchedule(dataService)

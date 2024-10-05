@@ -33,6 +33,7 @@ fun Application.module() {
         { cleanupService.cleanExpiredReservations() },
         { cleanupService.cleanOldStudents() },
         { cleanupService.updateNoActiveStudents() },
+        { cleanupService.cleanOldScheduleItems() },
         { cleanupService.updateAvailableScheduleItems() }
     ))
 
