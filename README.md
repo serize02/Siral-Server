@@ -141,6 +141,34 @@ Siral is the backend server for a meal reservation and management application. T
       - `200 OK` if successful
       - `400 Bad Request` if required fields are missing or the days are invalid
 
+### Logs
+- **Get Logs**: `GET /siral/logs`
+    - **Description**: Retrieves all logs.
+    ```kotlin
+        data class Log(
+            val id: Long,
+            val email: String,
+            val action: String,
+            val status: String,
+            val timestamp: LocalDateTime
+        )
+    ```
+    - **Response**:
+        - `200 OK` with list of logs if successful
+
+### Data
+- **Get Data**: `GET /siral/data`
+    - **Description**: Retrieves data for plot.
+    ```kotlin
+        data class Data(
+            val date: LocalDate,
+            val dinningHall: String,
+            val reservation: Long
+        )
+    ```
+    - **Response**:
+        - `200 OK` with list of data if successful
+
 ## Technologies
 - **Ktor**: A framework for building asynchronous servers and clients in connected systems. It is used to create the web server.
 - **Gradle**: A build automation tool used for dependency management and project build tasks.

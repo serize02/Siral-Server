@@ -8,6 +8,7 @@ import com.siral.utils.Actions
 import com.siral.utils.Status
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
@@ -20,6 +21,7 @@ class LogsService(private val db: Database): LogsDataSource {
     override suspend fun getLogs(): List<Log> = dbQuery {
         Logs
             .selectAll()
+            .orderBy(Logs.timestamp, SortOrder.DESC)
             .map {
                 Log(
                     id = it[Logs.id],

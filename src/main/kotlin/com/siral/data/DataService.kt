@@ -1,9 +1,7 @@
 package com.siral.data
 
 import com.siral.data.database.DatabaseInitializer
-import com.siral.data.database.tables.Dinninghalls
-import com.siral.data.database.tables.SiteManagerSchedulers
-import com.siral.data.database.tables.Students
+import com.siral.data.database.tables.*
 import com.siral.data.interfaces.VerifyDataSource
 import com.siral.data.services.*
 import kotlinx.coroutines.Dispatchers
@@ -43,6 +41,31 @@ class DataService(db: Database): VerifyDataSource {
         Dinninghalls
             .select { Dinninghalls.name eq dinninghallName }
             .count() > 0
+    }
+
+    suspend fun getData(): List<Data> {
+        val result = mutableListOf<Data>()
+        val today = java.time.LocalDate.now()
+
+        for(i in 1..30){
+            val date = today.plusDays(i.toLong())
+            dbQuery {
+                Dinninghalls.selectAll().forEach { dinninghall ->
+                    val dinninghallName = dinninghall[Dinninghalls.name]
+                    val count = Reservations
+                        .innerJoin(Schedule)
+                        .select {
+                            (Schedule.dinninghallId eq dinninghall[Dinninghalls.id]) and
+                            (Reservations.dateOfReservation greaterEq date.atStartOfDay()) and
+                            (Reservations.dateOfReservation lessEq date.plusDays(1).atStartOfDay())
+                        }
+                        .count()
+                    result.add(Data(date, dinninghallName, count))
+                }
+            }
+        }
+
+        return result
     }
 
 }

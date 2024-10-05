@@ -6,10 +6,8 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Route.getAllLogs(dataService: DataService){
-    get("siral/logs"){
-        return@get call.respond(HttpStatusCode.OK, dataService.logsService.getLogs())
+fun Route.getData(dataService: DataService) {
+    get("siral/data") {
+        return@get call.respond(HttpStatusCode.OK, dataService.getData())
     }
 }
-
-
