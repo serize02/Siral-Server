@@ -44,6 +44,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
     implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
     implementation(kotlin("stdlib-jdk8"))
+    implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
 }
 kotlin {
     jvmToolchain(21)

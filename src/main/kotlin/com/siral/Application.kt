@@ -7,6 +7,7 @@ import com.siral.data.database.cleanup.CleanupService
 import com.siral.plugins.*
 import com.siral.security.token.JwtTokenService
 import com.siral.security.token.TokenConfig
+import io.github.cdimascio.dotenv.dotenv
 import io.ktor.server.application.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,6 +19,8 @@ fun main(args: Array<String>) {
 }
 
 fun Application.module() {
+
+    val dotenv = dotenv()
 
     val database = DatabaseFactory.init()
 
@@ -43,7 +46,7 @@ fun Application.module() {
         issuer = environment.config.property("jwt.issuer").getString(),
         audience = environment.config.property("jwt.audience").getString(),
         expiresIn = DAY_DELAY,
-        secret = System.getenv("jwt-secret")
+        secret = dotenv["JWT_SECRET"]
     )
 
     configureSerialization()
