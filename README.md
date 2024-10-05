@@ -169,6 +169,12 @@ Siral is the backend server for a meal reservation and management application. T
     - **Response**:
         - `200 OK` with list of data if successful
 
+## Server Eficiency
+
+The server is designed to handle multiple requests concurrently. It uses a thread pool to manage the requests efficiently. The server is also designed to handle errors gracefully and return appropriate status codes.
+
+![Alt text](https://github.com/serize02/Siral-Server/blob/main/postman-tests/siral-server-eficiency.gif)
+
 ## Technologies
 - **Ktor**: A framework for building asynchronous servers and clients in connected systems. It is used to create the web server.
 - **Gradle**: A build automation tool used for dependency management and project build tasks.
