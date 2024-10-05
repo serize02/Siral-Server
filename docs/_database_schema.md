@@ -99,4 +99,4 @@ erDiagram
     Dinninghalls ||--o{ SiteManagerSchedulers: "has"
 ```
 
-![Alt text](https://github.com/serize02/Siral-Server/blob/main/docs/captures/siral_database_config.png)
+![Alt text](https://github.com/serize02/Siral-Server/blob/new-branch/docs/captures/siral_database_config.png)
