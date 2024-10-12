@@ -43,7 +43,7 @@ class CleanupService(): CleanupDataSource {
             .associate { it[AvailabilityConfigs.dinninghallId] to it[AvailabilityConfigs.daysBefore] }
         for((dinningHallId, daysBefore) in config) {
             Schedule
-                .update({ (Schedule.dinninghallId eq dinningHallId) and (Schedule.itemDate eq LocalDate.now().plusDays(daysBefore.toLong())) }) {
+                .update({ (Schedule.dinninghallId eq dinningHallId) and (Schedule.itemDate lessEq  LocalDate.now().plusDays(daysBefore.toLong())) }) {
                     it[available] = true
                 }
         }

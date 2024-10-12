@@ -3,7 +3,7 @@
 ## Description
 Siral is the backend server for a meal reservation and management application. This project is part of my university internship, where I am gaining practical experience in backend development. The application allows users to manage dining halls, make reservations, and handle user roles efficiently.
 
-## Installation
+## Installation and Usage
 1. Clone the repository:
     ```sh
     git clone https://github.com/serize02/siral.git
@@ -25,170 +25,403 @@ Siral is the backend server for a meal reservation and management application. T
     ```sh
     ./gradlew build
     ```
-
-## Usage
-1. Run the application:
+   
+4. Run the application:
     ```sh
     ./gradlew run
     ```
 
-2. The server will start on `http://localhost:8080`.
+5. The server will start on `http://localhost:8080`.
 
-## Endpoints
-### Admin-Scheduler-SiteManger
-- **Insert Dining Hall**: `POST /siral/dinninghalls/{dinninghallNAME}`
-   - **Description**: Inserts a new dining hall.
-   - **Parameters**: `dinninghallNAME` (path parameter)
-   - **Response**:
-        - `403 Forbidden` if user is not Admin
-            ```json
-                "ACCESS_DENIED"
-            ```
-        - `400 Bad Request` if the dining hall already exists
-             ```json
-                "DINNING_HALL_ALREADY_EXISTS"
-             ```  
-          or the name is missing
-             ```json
-                "MISSING_DINNING_HALL_NAME"
-             ```
-            
-        - `201 Created` if successful
-            ```json
-                "DINNING_HALL_INSERTED_SUCCESSFULLY"
-            ```
-
-- **Delete Dining Hall**: `DELETE /siral/dinninghalls/{dinninghallID}`
-   - **Description**: Deletes an existing dining hall.
-   - **Parameters**: `dinninghallID` (path parameter)
-   - **Response**:
-        - `403 Forbidden` if user is not Admin
-          ```json
-              "ACCESS_DENIED"
-          ```
-        - `200 OK` if successful
-        - `400 Bad Request` if the dining hall ID is missing or not found
-
-### User Roles
-- **Insert New Role**: `POST /siral/insert-new-role`
-   - **Description**: Inserts a new role for a user.
-   - **Request Body**: `NewRoleCredentials` (JSON)
-   - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if required fields are missing or the role is invalid
-
-- **Delete Role**: `DELETE /siral/delete-role/{email}`
-   - **Description**: Deletes an existing role for a user.
-   - **Parameters**: `email` (path parameter)
-   - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if the email is missing or the user is not found
+## Endpoints for Administration Web Interface
 
 ### Authentication
-- **Student Login**: `POST /siral/student-login`
-   - **Description**: Authenticates a student and returns a JWT token.
-   - **Request Body**: `AuthCredentials` (JSON)
-   - **Response**:
-      - `200 OK` with `StudentLoginData` if successful
-      - `401 Unauthorized` if credentials are invalid
 
-- **Admin Login**: `POST /siral/admin-login`
-   - **Description**: Authenticates an admin and returns a JWT token.
-   - **Request Body**: `AuthCredentials` (JSON)
-   - **Response**:
+#### Admin, Scheduler and Site Manager Login
+- **URL**: `POST /siral/admin-login`
+- **Description**: Authenticates an admin and returns a JWT token.
+- **Request Body**:
+    ```json
+    {
+        "email": "admin@example.com",
+        "password": "password123"
+    }
+    ```
+  - **Response**:
       - `200 OK` with JWT token if successful
       - `401 Unauthorized` if credentials are invalid
+      - For Admin Login:
+      ```json
+      {
+          "success": true,
+          "data": null, -> data is null for admin
+          "message": "USER_LOGED_SUCCESSFULLY",
+          "status": 200,
+          "role": "ADMIN",
+          "token": "jwt_token_here"
+      }
+      ```
+      - For Scheduler or Site Manager:
+      ```json
+        {
+            "success": true,
+            "data": {
+                "id": 1,
+                "email": "scheduler@gmail.com",
+                "dinningHallID": 1,
+                "role": "SCHEDULER"
+            },
+            "message": "USER_LOGED_SUCCESSFULLY",
+            "status": 200,
+            "role": "SCHEDULER",
+            "token": "jwt_token_here"
+        }
+     ```
+#### Insert Dining Hall
+- **URL**: `POST /siral/dinninghalls/{dinninghallNAME}`
+- **Description**: Inserts a new dining hall.
+- **Permissions**: Admin
+- **Request Parameters**:
+    - `dinninghallNAME` (path parameter)
+- **Response**:
+    - `403 Forbidden` if user is not Admin
+    - `400 Bad Request` if the dining hall already exists or the name is missing
+    - `200 OK` if successful
+    ```json
+    {
+        "success": true,
+        "data": {
+            "id": 1,
+            "name": "Dining Hall Name"
+        },
+        "message": "DINNING_HALL_INSERTED_SUCCESSFULLY",
+        "status": 200
+    }
+    ```
 
-- **Site Manager/Scheduler Login**: `POST /siral/site-manager-scheduler-login`
-   - **Description**: Authenticates a site manager or scheduler and returns a JWT token.
-   - **Request Body**: `AuthCredentials` (JSON)
-   - **Response**:
-      - `200 OK` with JWT token if successful
-      - `401 Unauthorized` if credentials are invalid
+#### Delete Dining Hall
+- **URL**: `DELETE /siral/dinninghalls/{dinninghallID}`
+- **Description**: Deletes an existing dining hall.
+- **Permissions**: Admin
+- **Request Parameters**:
+    - `dinninghallID` (path parameter)
+- **Response**:
+    - `403 Forbidden` if user is not Admin
+    - `200 OK` if successful
+    - `400 Bad Request` if the dining hall ID is missing or not found
+    ```json
+    {
+        "success": true,
+        "data": null,
+        "message": "DINNING_HALL_DELETED_SUCCESSFULLY",
+        "status": 200
+    }
+    ```
 
-### Reservations
-- **Make Reservation**: `POST /siral/reservations/{studentID}/{scheduleItemID}`
-   - **Description**: Makes a reservation for a student.
-   - **Parameters**: `studentID` and `scheduleItemID` (path parameters)
-   - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if the reservation already exists or required fields are missing
+#### Insert New Scheduler or Site Manager
+- **URL**: `POST /siral/insert-new-role`
+- **Description**: Inserts a new role for a user.
+- **Permissions**: Admin
+- **Request Body**:
+    ```json
+    {
+        "email": "user@example.com",
+        "role": "SCHEDULER",
+        "dinninghall": "Dining Hall Name"
+    }
+    ```
+- **Response**:
+    - `200 OK` if successful
+    - `400 Bad Request` if required fields are missing or the role is invalid
+    ```json
+    {
+        "success": true,
+        "data": {
+            "id": 1,
+            "email": "user@example.com",
+            "dinninghallID": 1,
+            "role": "SCHEDULER"
+        },
+        "message": "USER_INSERTED_SUCCESSFULLY",
+        "status": 200
+    }
+    ```
 
-- **Delete Reservation**: `DELETE /siral/reservations/{studentID}/{reservationID}`
-   - **Description**: Deletes an existing reservation.
-   - **Parameters**: `studentID` and `reservationID` (path parameters)
-   - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if the reservation ID is missing or not found
+#### Delete Scheduler or Site Manager
+- **URL**: `DELETE /siral/delete-role/{email}`
+- **Description**: Deletes an existing role for a user.
+- **Permissions**: Admin
+- **Request Parameters**:
+    - `email` (path parameter)
+- **Response**:
+    - `200 OK` if successful
+    - `400 Bad Request` if the email is missing or the user is not found
+    ```json
+    {
+        "success": true,
+        "data": null,
+        "message": "USER_DELETED_SUCCESSFULLY",
+        "status": 200
+    }
+    ```
 
-- **Get Student Reservations**: `GET /siral/reservations/{studentID}`
-   - **Description**: Retrieves all reservations for a student.
-   - **Parameters**: `studentID` (path parameter)
-   - **Response**:
-      - `200 OK` with list of reservations if successful
-      - `400 Bad Request` if required fields are missing
+#### Insert Schedule Item
+- **URL**: `POST /siral/schedule/{schedulerID}`
+- **Description**: Inserts a new schedule item.
+- **Permissions**: Scheduler
+- **Request Parameters**:
+    - `schedulerID` (path parameter)
+- **Request Body**:
+    ```json
+    {
+        "date": "2024-10-25",
+        "breakfast": true,
+        "lunch": true,
+        "dinner": true
+    }
+    ```
+- **Response**:
+    - `200 OK` if successful
+    - `400 Bad Request` if required fields are missing or the date is invalid
+    ```json
+    {
+        "success": true,
+        "data": null,
+        "message": "ALL_DONE",
+        "status": 200
+    }
+    ```
 
-### Schedule
-- **Get Schedule**: `GET /siral/schedule/{dinninghallID}`
-   - **Description**: Retrieves the schedule for a dining hall.
-   - **Parameters**: `dinninghallID` (path parameter)
-   - **Response**:
-      - `200 OK` with schedule items if successful
-      - `400 Bad Request` if required fields are missing
-      - `404 Not Found` if the dining hall is not found
+#### Delete Schedule Item
+- **URL**: `DELETE /siral/schedule/{schedulerID}`
+- **Description**: Deletes an existing schedule item.
+- **Permissions**: Scheduler
+- **Request Parameters**:
+    - `schedulerID` (path parameter)
+- **Request Body**:
+    ```json
+    {
+        "date": "2023-10-01",
+        "breakfast": true,
+        "lunch": true,
+        "dinner": true
+    }
+    ```
+- **Response**:
+    - `200 OK` if successful
+    - `400 Bad Request` if required fields are missing or the item is not found
+    ```json
+    {
+        "success": true,
+        "data": null,
+        "message": "ALL_DONE",
+        "status": 200
+    }
+    ```
 
-- **Insert Schedule Item**: `POST /siral/schedule/{schedulerID}`
-   - **Description**: Inserts a new schedule item.
-   - **Parameters**: `schedulerID` (path parameter)
-   - **Request Body**: `ScheduleItemRequest` (JSON)
-   - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if required fields are missing or the date is invalid
-
-- **Delete Schedule Item**: `DELETE /siral/schedule/{schedulerID}`
-   - **Description**: Deletes an existing schedule item.
-   - **Parameters**: `schedulerID` (path parameter)
-   - **Request Body**: `ScheduleItemRequest` (JSON)
-   - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if required fields are missing or the item is not found
-
-- **Update Schedule Availability**: `PUT /siral/schedule/availability/{schedulerID}/{days}`
-   - **Description**: Updates the number of days before a schedule item becomes available.
-   - **Parameters**: `schedulerID` and `days` (path parameters)
-   - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if required fields are missing or the days are invalid
+#### Update Schedule Availability
+- **URL**: `PUT /siral/schedule/availability/{schedulerID}/{days}`
+- **Description**: Updates the number of days before a schedule item becomes available.
+- **Permissions**: Scheduler
+- **Request Parameters**:
+    - `schedulerID` (path parameter)
+    - `days` (path parameter)
+- **Response**:
+    - `200 OK` if successful
+    - `400 Bad Request` if required fields are missing or the days are invalid -> valid-days(2,7,15,30)
+    ```json
+    {
+        "success": true,
+        "data": null,
+        "message": "ALL_DONE",
+        "status": 200
+    }
+    ```
 
 ### Logs
-- **Get Logs**: `GET /siral/logs`
-    - **Description**: Retrieves all logs.
-    ```kotlin
-        data class Log(
-            val id: Long,
-            val email: String,
-            val action: String,
-            val status: String,
-            val timestamp: LocalDateTime
-        )
-    ```
-    - **Response**:
-        - `200 OK` with list of logs if successful
 
-### Data
-- **Get Data**: `GET /siral/data`
-    - **Description**: Retrieves data for plot.
-    ```kotlin
-        data class Data(
-            val date: LocalDate,
-            val dinningHall: String,
-            val reservation: Long
-        )
+#### Get Logs
+- **URL**: `GET /siral/logs`
+- **Description**: Retrieves all logs .
+- **Permissions**: Admin, Scheduler, Site Manager
+- **Response**:
+    - `200 OK` with list of logs if successful
+    ```json
+    {
+        "success": true,
+        "data": [
+            {
+                "id": 1,
+                "email": "admin@example.com",
+                "action": "INSERT_DINNING_HALL",
+                "status": "SUCCESSFUL",
+                "timestamp": "2023-10-01T12:00:00"
+            }
+        ],
+        "message": "DATA_RETREIVED_SUCCESSFULLY",
+        "status": 200
+    }
     ```
-    - **Response**:
-        - `200 OK` with list of data if successful
 
-## Server Eficiency
+### Data for Statistics Plot
+
+#### Get Data
+- **URL**: `GET /siral/data`
+- **Description**: Retrieves data for plot.
+- **Permissions**: Admin, Scheduler, Site Manager
+- **Response**:
+    - `200 OK` with list of data if successful
+    ```json
+    {
+        "success": true,
+        "data": [
+            {
+                "date": "2023-10-01",
+                "dinningHall": "Dining Hall Name",
+                "reservation": 100
+            }
+        ],
+        "message": "DATA_RETREIVED_SUCCESSFULLY",
+        "status": 200
+    }
+    ```
+
+## Endpoints for Student Interface
+
+#### Student Login
+- **URL**: `POST /siral/student-login`
+- **Description**: Authenticates a student and returns a JWT token.
+- **Request Body**:
+    ```json
+    {
+        "email": "student@example.com",
+        "password": "password123"
+    }
+    ```
+- **Response**:
+  - `200 OK` with `StudentLoginData` if successful
+  - `401 Unauthorized` if credentials are invalid
+    ```json
+    {
+        "success": true,
+        "data": {
+            "id": 1,
+            "name": "John Doe",
+            "code": 1234,
+            "email": "student@example.com",
+            "resident": true,
+            "last": "2024-10-07 22:30:33.005274",
+            "active": true
+        },
+        "message": "USER_LOGED_SUCCESSFULLY",
+        "status": 200,
+        "role": "STUDENT",
+        "token": "jwt_token_here"
+    }
+    ```
+
+### Reservations
+
+#### Make Reservation
+- **URL**: `POST /siral/reservations/{studentID}/{scheduleItemID}`
+- **Description**: Makes a reservation for a student.
+- **Permissions**: Student
+- **Request Parameters**:
+    - `studentID` (path parameter)
+    - `scheduleItemID` (path parameter)
+- **Response**:
+    - `200 OK` if successful
+    - `400 Bad Request` if the reservation already exists or required fields are missing
+    ```json
+    {
+        "success": true,
+        "data": {
+            "id": 1,
+            "studentID": 1,
+            "scheduleItemID": 1
+        },
+        "message": "RESERVATION_MADE",
+        "status": 200
+    }
+    ```
+
+#### Delete Reservation
+- **URL**: `DELETE /siral/reservations/{studentID}/{reservationID}`
+- **Description**: Deletes an existing reservation.
+- **Permissions**: Student
+- **Request Parameters**:
+    - `studentID` (path parameter)
+    - `reservationID` (path parameter)
+- **Response**:
+    - `200 OK` if successful
+    - `400 Bad Request` if the reservation ID is missing or not found
+    ```json
+    {
+        "success": true,
+        "data": null,
+        "message": "RESERVATION_DELETED",
+        "status": 200
+    }
+    ```
+
+#### Get Student Reservations
+- **URL**: `GET /siral/reservations/{studentID}`
+- **Description**: Retrieves all reservations for a student.
+- **Permissions**: Student
+- **Request Parameters**:
+    - `studentID` (path parameter)
+- **Response**:
+    - `200 OK` with list of reservations if successful
+    - `400 Bad Request` if required fields are missing
+    ```json
+    {
+        "success": true,
+        "data": [
+            {
+              "id": 6,
+              "studentID": 1,
+              "scheduleItemID": 30,
+              "dateOfReservation": "2024-10-12T16:44:46.147406"
+            },
+            {
+              "id": 7,
+              "studentID": 1,
+              "scheduleItemID": 31,
+              "dateOfReservation": "2024-10-12T16:44:46.147406"
+            }
+        ],
+        "message": "DATA_RETREIVED_SUCCESSFULLY",
+        "status": 200
+    }
+    ```
+#### Get Schedule
+- **URL**: `GET /siral/schedule/{dinninghallID}`
+- **Description**: Retrieves the schedule for a dining hall (all the items, included the ones that are not available).
+- **Request Parameters**:
+    - `dinninghallID` (path parameter)
+- **Response**:
+    - `200 OK` with schedule items if successful
+    - `400 Bad Request` if required fields are missing
+    - `404 Not Found` if the dining hall is not found
+    ```json
+    {
+        "success": true,
+        "data": [
+            {
+                "id": 1,
+                "date": "2023-10-01",
+                "meal": "breakfast",
+                "dinninghallID": 1
+            }
+        ],
+        "message": "DATA_RETREIVED_SUCCESSFULLY",
+        "status": 200
+    }
+    ```
+
+
+
+## Server Efficiency
 
 The server is designed to handle multiple requests concurrently. It uses a thread pool to manage the requests efficiently. The server is also designed to handle errors gracefully and return appropriate status codes.
 

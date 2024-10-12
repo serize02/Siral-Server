@@ -6,7 +6,6 @@ import com.siral.routes.*
 import com.siral.security.token.TokenConfig
 import com.siral.security.token.TokenService
 import com.siral.utils.ResponseMessage
-import com.siral.utils.UserRole
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -30,10 +29,10 @@ fun Application.configureRouting(
         studentLogin(dataService, tokenService, tokenConfig)
         adminLogin(dataService, tokenService, tokenConfig)
         auth()
+        getSchedule(dataService)
 //        siteManagerSchedulerLogin(dataService, tokenService, tokenConfig)
 
         authenticate {
-            getSchedule(dataService)
 
             insertDinningHalls(dataService)
             deleteDinningHall(dataService)
