@@ -16,7 +16,7 @@ fun Route.makeReservations(
     dataService: DataService
 ) {
     post("/siral/reservations/{studentID}/{scheduleItemID}") {
-        call.withRole(UserRole.STUDENT){
+        call.withRole(listOf(UserRole.STUDENT.name)){
             val studentID = call.parameters["studentID"]?.toLong()
                 ?: return@post call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_STUDENT_ID.name, status = 404))
 
@@ -64,7 +64,7 @@ fun Route.deleteReservation(
     dataService: DataService
 ){
     delete("/siral/reservations/{studentID}/{reservationID}") {
-        call.withRole(UserRole.STUDENT){
+        call.withRole(listOf(UserRole.STUDENT.name)){
             val studentID = call.parameters["studentID"]?.toLong()
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_STUDENT_ID.name, status = 404))
 
@@ -95,7 +95,7 @@ fun Route.getStudentReservations(
     userService: DataService
 ){
     get("/siral/reservations/{studentID}") {
-        call.withRole(UserRole.STUDENT){
+        call.withRole(listOf(UserRole.STUDENT.name)){
             val studentID = call.parameters["studentID"]?.toLong()
                 ?: return@get call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_STUDENT_ID.name, status = 404))
             val reservations = userService.reservationService.getReservations(studentID)

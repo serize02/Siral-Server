@@ -13,7 +13,7 @@ import io.ktor.server.routing.*
 
 fun Route.insertDinningHalls(dataService: DataService) {
     post("siral/dinninghalls/{dinninghallNAME}") {
-        call.withRole(UserRole.ADMIN){
+        call.withRole(listOf(UserRole.ADMIN.name)){
             val name = call.parameters["dinninghallNAME"]
                 ?: run {
                     dataService.logsService.addLog(Admin.email, Actions.INSERT_DINNING_HALL, Status.FAILED)
@@ -39,7 +39,7 @@ fun Route.insertDinningHalls(dataService: DataService) {
 
 fun Route.deleteDinningHall(dataService: DataService) {
     delete("siral/dinninghalls/{dinninghallID}") {
-        call.withRole(UserRole.ADMIN){
+        call.withRole(listOf(UserRole.ADMIN.name)){
             val id = call.parameters["dinninghallID"]?.toLong()
                 ?: run {
                     dataService.logsService.addLog(Admin.email, Actions.DELETE_DINNING_HALL, Status.FAILED)
@@ -62,7 +62,7 @@ fun Route.deleteDinningHall(dataService: DataService) {
 
 fun Route.insertNewRole(dataService: DataService) {
     post("siral/insert-new-role") {
-        call.withRole(UserRole.ADMIN){
+        call.withRole(listOf(UserRole.ADMIN.name)){
             val credentials = call.receive<NewRoleCredentials>()
 
             if(credentials.email.isEmpty() || credentials.dinninghall.isEmpty() || credentials.role.isEmpty()){
@@ -97,7 +97,7 @@ fun Route.insertNewRole(dataService: DataService) {
 
 fun Route.deleteRole(dataService: DataService) {
     delete("siral/delete-role/{email}") {
-        call.withRole(UserRole.ADMIN){
+        call.withRole(listOf(UserRole.ADMIN.name)){
             val email = call.parameters["email"]
                 ?: run {
                     dataService.logsService.addLog(Admin.email, Actions.DELETE_ROLE, Status.FAILED)

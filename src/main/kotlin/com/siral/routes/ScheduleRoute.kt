@@ -27,7 +27,7 @@ fun Route.getSchedule(dataService: DataService) {
 
 fun Route.insertScheduleItem(dataService: DataService){
     post("siral/schedule/{schedulerID}") {
-        call.withRole(UserRole.SCHEDULER){
+        call.withRole(listOf(UserRole.SCHEDULER.name)){
             val schedulerId = call.parameters["schedulerID"]?.toLong()
                 ?: return@post call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_REQUIRED_FIELDS.name, status = 404))
 
@@ -68,7 +68,7 @@ fun Route.insertScheduleItem(dataService: DataService){
 
 fun Route.deleteScheduleItem(dataService: DataService){
     delete("siral/schedule/{schedulerID}") {
-        call.withRole(UserRole.SCHEDULER){
+        call.withRole(listOf(UserRole.SCHEDULER.name)){
             val schedulerId = call.parameters["schedulerID"]?.toLong()
                 ?: return@delete call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_REQUIRED_FIELDS.name, status = 404))
 
@@ -114,7 +114,7 @@ fun Route.deleteScheduleItem(dataService: DataService){
 
 fun Route.daysBefore(dataService: DataService){
     put("siral/schedule/availability/{schedulerID}/{days}") {
-        call.withRole(UserRole.SCHEDULER){
+        call.withRole(listOf(UserRole.SCHEDULER.name)){
             val schedulerId = call.parameters["schedulerID"]?.toLong()
                 ?: return@put call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_REQUIRED_FIELDS.name, status = 404))
 

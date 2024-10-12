@@ -31,8 +31,6 @@ fun Application.configureRouting(
         adminLogin(dataService, tokenService, tokenConfig)
         auth()
 //        siteManagerSchedulerLogin(dataService, tokenService, tokenConfig)
-        getAllLogs(dataService)
-        getStatsData(dataService)
 
         authenticate {
             getSchedule(dataService)
@@ -49,13 +47,17 @@ fun Application.configureRouting(
             makeReservations(dataService)
             deleteReservation(dataService)
             getStudentReservations(dataService)
+
+            getAllLogs(dataService)
+            getStatsData(dataService)
+
         }
     }
 }
 
-suspend inline fun ApplicationCall.withRole(role: UserRole, block :() -> Unit){
+suspend inline fun ApplicationCall.withRole(roles: List<String>, block :() -> Unit){
     val principal = principal<JWTPrincipal>()
     val userRole = principal?.payload?.getClaim("userRole")?.asString()
-    if(userRole == role.name) block() else respond(HttpStatusCode.Forbidden, ResponseMessage.ACCESS_DENIED)
+    if (userRole in roles) block() else respond(HttpStatusCode.Forbidden, Response(success = false, data = null, message = ResponseMessage.ACCESS_DENIED.name, status = 403))
 }
 
