@@ -43,7 +43,7 @@ class DataService(db: Database): VerifyDataSource {
             .count() > 0
     }
 
-    suspend fun getData(): List<Data> {
+    suspend fun getStatsData(): List<Data> {
         val result = mutableListOf<Data>()
         val today = java.time.LocalDate.now()
 

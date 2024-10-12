@@ -1,6 +1,7 @@
 package com.siral.plugins
 
 import com.siral.data.DataService
+import com.siral.responses.Response
 import com.siral.routes.*
 import com.siral.security.token.TokenConfig
 import com.siral.security.token.TokenService
@@ -29,9 +30,9 @@ fun Application.configureRouting(
         studentLogin(dataService, tokenService, tokenConfig)
         adminLogin(dataService, tokenService, tokenConfig)
         auth()
-        siteManagerSchedulerLogin(dataService, tokenService, tokenConfig)
+//        siteManagerSchedulerLogin(dataService, tokenService, tokenConfig)
         getAllLogs(dataService)
-        getData(dataService)
+        getStatsData(dataService)
 
         authenticate {
             getSchedule(dataService)

@@ -35,20 +35,39 @@ Siral is the backend server for a meal reservation and management application. T
 2. The server will start on `http://localhost:8080`.
 
 ## Endpoints
-### Dining Halls
+### Admin-Scheduler-SiteManger
 - **Insert Dining Hall**: `POST /siral/dinninghalls/{dinninghallNAME}`
    - **Description**: Inserts a new dining hall.
    - **Parameters**: `dinninghallNAME` (path parameter)
    - **Response**:
-      - `201 Created` if successful
-      - `400 Bad Request` if the dining hall already exists or the name is missing
+        - `403 Forbidden` if user is not Admin
+            ```json
+                "ACCESS_DENIED"
+            ```
+        - `400 Bad Request` if the dining hall already exists
+             ```json
+                "DINNING_HALL_ALREADY_EXISTS"
+             ```  
+          or the name is missing
+             ```json
+                "MISSING_DINNING_HALL_NAME"
+             ```
+            
+        - `201 Created` if successful
+            ```json
+                "DINNING_HALL_INSERTED_SUCCESSFULLY"
+            ```
 
 - **Delete Dining Hall**: `DELETE /siral/dinninghalls/{dinninghallID}`
    - **Description**: Deletes an existing dining hall.
    - **Parameters**: `dinninghallID` (path parameter)
    - **Response**:
-      - `200 OK` if successful
-      - `400 Bad Request` if the dining hall ID is missing or not found
+        - `403 Forbidden` if user is not Admin
+          ```json
+              "ACCESS_DENIED"
+          ```
+        - `200 OK` if successful
+        - `400 Bad Request` if the dining hall ID is missing or not found
 
 ### User Roles
 - **Insert New Role**: `POST /siral/insert-new-role`
