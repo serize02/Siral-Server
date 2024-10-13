@@ -66,4 +66,17 @@ class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedule
                 it[daysBefore] = days
             }
     }
+
+    override suspend fun getAll(): List<SiteManagerScheduler> = dbQuery {
+        SiteManagerSchedulers
+            .selectAll()
+            .map {
+                SiteManagerScheduler(
+                    id = it[SiteManagerSchedulers.id],
+                    email = it[SiteManagerSchedulers.email],
+                    dinninghallID = it[SiteManagerSchedulers.dinninghallID],
+                    role = it[SiteManagerSchedulers.role]
+                )
+            }
+    }
 }

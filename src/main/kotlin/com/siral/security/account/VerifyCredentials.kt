@@ -3,31 +3,25 @@ package com.siral.security.account
 import com.siral.request.AuthCredentials
 import com.siral.responses.StudentData
 import com.siral.utils.Admin
+import java.util.Random
 
-fun verifyStudentCredentials(credentials: AuthCredentials): StudentData? {
-    // Fake credentials for validation
-    val fakeEmail = "student@example.com"
-    val fakePassword = "password123"
+fun verifyStudentCredentials(credentials: AuthCredentials): StudentData {
 
-    return if (credentials.email == fakeEmail && credentials.password == fakePassword) {
-        // Return fake student data
-        StudentData(
-            name = "John Doe",
-            code = 12345L,
-            email = fakeEmail,
-            resident = true,
-        )
-    } else {
-        // Return null if credentials do not match
-        null
-    }
+    val random = Random()
+
+    val data =  StudentData(
+        name = "test-student",
+        code = random.nextLong(123, 1000000),
+        email = credentials.email,
+        resident = random.nextBoolean()
+    )
+
+    return data
 }
 
 fun verifyAdminCredentials(
     credentials: AuthCredentials,
 ): Boolean {
-
-
     if(credentials.email != Admin.email)
         return false
     if(credentials.password != Admin.password)

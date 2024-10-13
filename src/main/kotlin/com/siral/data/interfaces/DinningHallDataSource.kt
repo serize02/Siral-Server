@@ -7,4 +7,5 @@ interface DinningHallDataSource {
     suspend fun insertDinninghall(dinninghallName: String)
     suspend fun deleteDinninghall(dinninghallID: Long)
     suspend fun getDinninghallByName(dinninghallName: String): DinningHall?
+    suspend fun getAll(): List<DinningHall>
 }

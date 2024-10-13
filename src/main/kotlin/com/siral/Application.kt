@@ -54,4 +54,5 @@ fun Application.module() {
     configureSecurity(tokenConfig)
     configureRouting(dataService, tokenService, tokenConfig)
     configureMonitoring()
+
 }

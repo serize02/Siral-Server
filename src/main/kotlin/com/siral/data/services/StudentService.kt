@@ -5,12 +5,9 @@ import com.siral.data.models.Student
 import com.siral.data.interfaces.StudentDataSource
 import com.siral.responses.StudentData
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.update
 import java.time.LocalDateTime
 
 class StudentService(private val db: Database): StudentDataSource {
@@ -67,6 +64,22 @@ class StudentService(private val db: Database): StudentDataSource {
             .update({ Students.id eq studentId }) {
                 it[last] = LocalDateTime.now()
                 it[active] = true
+            }
+    }
+
+    override suspend fun getAll(): List<Student> = dbQuery {
+        Students
+            .selectAll()
+            .map{
+                Student(
+                    id = it[Students.id],
+                    name = it[Students.name],
+                    code = it[Students.code],
+                    email = it[Students.email],
+                    resident = it[Students.resident],
+                    last = it[Students.last],
+                    active = it[Students.active]
+                )
             }
     }
 }

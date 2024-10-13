@@ -8,4 +8,5 @@ interface StudentDataSource {
     suspend fun getStudentById(studentId: Long): Student?
     suspend fun insertStudent(student: StudentData): Long
     suspend fun updateStudentLastAndActive(studentId: Long)
+    suspend fun getAll(): List<Student>
 }

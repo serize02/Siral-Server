@@ -9,4 +9,5 @@ interface ScheduleDataSource {
     suspend fun deleteScheduleItem(date: LocalDate, time: String, dinninghallID: Long)
     suspend fun getSchedule(dinninghallID: Long): List<ScheduleItem>
     suspend fun getScheduleItem(date: LocalDate, time: String, dinninghallID: Long): ScheduleItem?
+    suspend fun getAvailableItemsForDate(date: LocalDate, dinninghallID: Long): List<ScheduleItem>
 }

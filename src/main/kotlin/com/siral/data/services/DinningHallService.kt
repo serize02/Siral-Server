@@ -6,11 +6,8 @@ import com.siral.data.database.tables.Dinninghalls.id
 import com.siral.data.models.DinningHall
 import com.siral.data.interfaces.DinningHallDataSource
 import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class DinningHallService(private val db: Database): DinningHallDataSource {
@@ -32,12 +29,12 @@ class DinningHallService(private val db: Database): DinningHallDataSource {
 
     override suspend fun insertDinninghall(dinninghallName: String): Unit = dbQuery{
         val id = Dinninghalls.insert { it[name] = dinninghallName } get Dinninghalls.id
-        AvailabilityConfigs.insert { it[AvailabilityConfigs.dinninghallId] = id }
+        AvailabilityConfigs.insert { it[dinninghallId] = id }
     }
 
     override suspend fun deleteDinninghall(dinninghallID: Long): Unit = dbQuery {
         SiteManagerSchedulers.deleteWhere { SiteManagerSchedulers.dinninghallID eq dinninghallID }
-        AvailabilityConfigs.deleteWhere { AvailabilityConfigs.dinninghallId eq dinninghallID }
+        AvailabilityConfigs.deleteWhere { dinninghallId eq dinninghallID }
         Schedule
             .select { Schedule.dinninghallId eq dinninghallID }
             .toList()
@@ -53,10 +50,21 @@ class DinningHallService(private val db: Database): DinningHallDataSource {
             .select { Dinninghalls.name eq dinninghallName }
             .map {
                 DinningHall(
-                    id = it[Dinninghalls.id],
+                    id = it[id],
                     name = it[Dinninghalls.name]
                 )
             }
             .singleOrNull()
+    }
+
+    override suspend fun getAll(): List<DinningHall> = dbQuery {
+        Dinninghalls
+            .selectAll()
+            .map {
+                DinningHall(
+                    id = it[id],
+                    name = it[Dinninghalls.name]
+                )
+            }
     }
 }

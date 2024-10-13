@@ -24,6 +24,23 @@ fun Route.getSchedule(dataService: DataService) {
     }
 }
 
+fun Route.getMealsForDate(dataService: DataService){
+    get("siral/schedule/{dinninghallID}/{date}"){
+        call.withRole(listOf(UserRole.STUDENT.name)){
+            val dinninghallID = call.parameters["dinninghallID"]?.toLong()
+                ?: return@get call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_REQUIRED_FIELDS.name, status = 404))
+            try{
+                val date = call.parameters["date"]?.let { it1 -> LocalDate.parse(it1) }
+                    ?: return@get call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_REQUIRED_FIELDS.name, status = 404))
+                val meals = dataService.scheduleService.getAvailableItemsForDate(date, dinninghallID)
+                return@get call.respond(HttpStatusCode.OK, Response(success = true, data = meals, message = ResponseMessage.DATA_RETREIVED_SUCCESSFULLY.name, status = 200))
+            } catch (ex: Exception){
+                return@get call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.INVALID_DATE.name, status = 404))
+            }
+        }
+    }
+}
+
 
 fun Route.insertScheduleItem(dataService: DataService){
     post("siral/schedule/{schedulerID}") {

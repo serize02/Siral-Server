@@ -9,7 +9,7 @@ object Students: Table("students") {
     val id = long("id").autoIncrement()
     val name = varchar("name", 64)
     val code = long("student_code")
-    val email = varchar("email", 32)
+    val email = varchar("email", 32).uniqueIndex()
     val resident = bool("resident")
     val last = datetime("last_action").defaultExpression(CurrentDateTime)
     val active = bool("active").defaultExpression(booleanLiteral(true))

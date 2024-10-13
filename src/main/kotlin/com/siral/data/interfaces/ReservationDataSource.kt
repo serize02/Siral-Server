@@ -9,4 +9,5 @@ interface ReservationDataSource {
     suspend fun deleteReservation(reservationId: Long)
     suspend fun getReservations(studentID: Long): List<Reservation>
     suspend fun getReservationByID(reservationId: Long): Reservation?
+    suspend fun getAll(): List<Reservation>
 }

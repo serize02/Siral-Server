@@ -44,7 +44,7 @@ fun Route.makeReservations(
                 return@post call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.SCHEDULE_ITEM_NOT_AVAILABLE.name, status = 404))
             }
 
-            var reservation = dataService.reservationService.getReservationByScheduleItemIdAndUserId(studentID, scheduleItemId)
+            val reservation = dataService.reservationService.getReservationByScheduleItemIdAndUserId(studentID, scheduleItemId)
             if(reservation != null){
                 dataService.logsService.addLog(student.email, Actions.MAKE_RESERVATION, Status.FAILED)
                 return@post call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MEAL_ALREADY_RESERVED.name, status = 404))

@@ -28,16 +28,8 @@ fun Route.studentLogin(
     post("siral/student-login") {
         val credentials = call.receive<AuthCredentials>()
 
-        // Fake external API validation
+//         Fake external API validation -> now it only generates random data
         val authResponse = verifyStudentCredentials(credentials)
-            ?: return@post call.respond(HttpStatusCode.Unauthorized, AuthResponse(
-                success = false,
-                data = null,
-                message = ResponseMessage.INVALID_CREDENTIALS.name,
-                status = HttpStatusCode.Unauthorized.value,
-                role = null,
-                token = null
-            ))
 
         // Check if the student is already registered
         val foundStudent = dataService.studentService.getStudentByEmail(credentials.email)

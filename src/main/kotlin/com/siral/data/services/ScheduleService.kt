@@ -83,4 +83,22 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
             }
             .singleOrNull()
     }
+
+    override suspend fun getAvailableItemsForDate(date: LocalDate, dinninghallID: Long): List<ScheduleItem> = dbQuery {
+        Schedule
+            .select {
+                (Schedule.dinninghallId eq dinninghallID) and
+                (Schedule.itemDate eq date) and
+                (Schedule.available eq true)
+            }
+            .map {
+                ScheduleItem(
+                    id = it[Schedule.id],
+                    date = it[Schedule.itemDate],
+                    time = it[Schedule.time],
+                    dinninghallId = it[Schedule.dinninghallId],
+                    available = it[Schedule.available]
+                )
+            }
+    }
 }

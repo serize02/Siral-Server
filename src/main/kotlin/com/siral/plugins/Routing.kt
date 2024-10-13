@@ -42,6 +42,7 @@ fun Application.configureRouting(
             insertScheduleItem(dataService)
             deleteScheduleItem(dataService)
             daysBefore(dataService)
+            getMealsForDate(dataService)
 
             makeReservations(dataService)
             deleteReservation(dataService)
@@ -49,6 +50,10 @@ fun Application.configureRouting(
 
             getAllLogs(dataService)
             getStatsData(dataService)
+            getAdministrationPersonal(dataService)
+            getAllStudents(dataService)
+            getAllDinningHalls(dataService)
+            getAllReservations(dataService)
 
         }
     }

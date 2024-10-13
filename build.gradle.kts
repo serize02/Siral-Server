@@ -45,6 +45,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-java-time:0.41.1")
     implementation(kotlin("stdlib-jdk8"))
     implementation("io.github.cdimascio:dotenv-kotlin:6.2.2")
+    implementation ("io.github.serpro69:kotlin-faker:1.6.0")
 }
 kotlin {
     jvmToolchain(21)

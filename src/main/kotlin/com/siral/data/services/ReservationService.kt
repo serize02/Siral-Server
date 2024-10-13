@@ -71,4 +71,17 @@ class ReservationService(private val db: Database): ReservationDataSource {
             }
             .singleOrNull()
     }
+
+    override suspend fun getAll(): List<Reservation> = dbQuery {
+        Reservations
+            .selectAll()
+            .map {
+                Reservation(
+                    id = it[Reservations.id],
+                    studentID = it[Reservations.studentID],
+                    scheduleItemID = it[Reservations.scheduleItemId],
+                    dateOfReservation = it[Reservations.dateOfReservation]
+                )
+            }
+    }
 }
