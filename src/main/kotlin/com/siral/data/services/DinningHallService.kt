@@ -17,10 +17,10 @@ class DinningHallService(private val db: Database): DinningHallDataSource {
 
     override suspend fun getDinninghallByID(dinninghallID: Long): DinningHall? = dbQuery {
         Dinninghalls
-            .select { Dinninghalls.id eq dinninghallID }
+            .select { id eq dinninghallID }
             .map {
                 DinningHall(
-                    id = it[Dinninghalls.id],
+                    id = it[id],
                     name = it[Dinninghalls.name]
                 )
             }
@@ -33,15 +33,15 @@ class DinningHallService(private val db: Database): DinningHallDataSource {
     }
 
     override suspend fun deleteDinninghall(dinninghallID: Long): Unit = dbQuery {
-        SiteManagerSchedulers.deleteWhere { SiteManagerSchedulers.dinninghallID eq dinninghallID }
-        AvailabilityConfigs.deleteWhere { dinninghallId eq dinninghallID }
-        Schedule
-            .select { Schedule.dinninghallId eq dinninghallID }
-            .toList()
-            .forEach { item ->
-                Reservations.deleteWhere { Reservations.scheduleItemId eq item[Schedule.id] }
-            }
-        Schedule.deleteWhere { Schedule.dinninghallId eq dinninghallID }
+//        SiteManagerSchedulers.deleteWhere { SiteManagerSchedulers.dinninghallID eq dinninghallID }
+//        AvailabilityConfigs.deleteWhere { dinninghallId eq dinninghallID }
+//        Schedule
+//            .select { Schedule.dinninghallId eq dinninghallID }
+//            .toList()
+//            .forEach { item ->
+//                Reservations.deleteWhere { Reservations.scheduleItemId eq item[Schedule.id] }
+//            }
+//        Schedule.deleteWhere { Schedule.dinninghallId eq dinninghallID }
         Dinninghalls.deleteWhere { id eq dinninghallID }
     }
 
