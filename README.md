@@ -50,11 +50,11 @@ Siral is the backend server for a meal reservation and management application. T
   - **Response**:
       - `200 OK` with JWT token if successful
       - `401 Unauthorized` if credentials are invalid
-      - For Admin Login:
+      - For Admin Login (data is null in this case):
       ```json
       {
           "success": true,
-          "data": null, -> data is null for admin
+          "data": null,
           "message": "USER_LOGED_SUCCESSFULLY",
           "status": 200,
           "role": "ADMIN",
@@ -238,8 +238,6 @@ Siral is the backend server for a meal reservation and management application. T
     }
     ```
 
-### Logs
-
 #### Get Logs
 - **URL**: `GET /siral/logs`
 - **Description**: Retrieves all logs .
@@ -258,15 +256,13 @@ Siral is the backend server for a meal reservation and management application. T
                 "timestamp": "2023-10-01T12:00:00"
             }
         ],
-        "message": "DATA_RETREIVED_SUCCESSFULLY",
+        "message": "DATA_RETRIEVED_SUCCESSFULLY",
         "status": 200
     }
     ```
 
-### Data for Statistics Plot
-
-#### Get Data
-- **URL**: `GET /siral/data`
+#### Get Data for Stats
+- **URL**: `GET /siral/stats-data`
 - **Description**: Retrieves data for plot.
 - **Permissions**: Admin, Scheduler, Site Manager
 - **Response**:
@@ -278,13 +274,139 @@ Siral is the backend server for a meal reservation and management application. T
             {
                 "date": "2023-10-01",
                 "dinningHall": "Dining Hall Name",
-                "reservation": 100
+                "reservations": 100
             }
         ],
-        "message": "DATA_RETREIVED_SUCCESSFULLY",
+        "message": "DATA_RETRIEVED_SUCCESSFULLY",
         "status": 200
     }
     ```
+
+#### Get All Administration Personal
+- **URL**: `GET /siral/administration`
+- **Description**: Retrieves all the schedulers, site managers and admin.
+- **Permissions**: Admin, Scheduler, Site Manager
+- **Response**:
+- `200 OK` with list of data if successful
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "id": 4,
+              "email": "scheduler-central@uclv.cu",
+              "dinninghallID": 9,
+              "role": "SCHEDULER"
+          },
+          {
+              "id": 5,
+              "email": "scheduler-fajardo@uclv.cu",
+              "dinninghallID": 10,
+              "role": "SCHEDULER"
+          },
+          {
+              "id": 6,
+              "email": "scheduler-camilitos@uclv.cu",
+              "dinninghallID": 11,
+              "role": "SCHEDULER"
+          },
+          {
+              "id": 7,
+              "email": "scheduler-varela@uclv.cu",
+              "dinninghallID": 12,
+              "role": "SCHEDULER"
+          }
+      ],
+      "message": "DATA_RETRIEVED_SUCCESSFULLY",
+      "status": 200
+  }
+  ```
+
+#### Get All Students
+- **URL**: `GET /siral/students`
+- **Description**: Retrieves all the students.
+- **Permissions**: Admin, Scheduler, Site Manager
+- **Response**:
+- `200 OK` with list of data if successful
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "id": 1,
+              "name": "John Doe",
+              "code": 123123,
+              "email": "eserize@uclv.cu",
+              "resident": true,
+              "last": "2024-10-12T21:43:58.950543",
+              "active": true
+          },
+          {
+              "id": 2,
+              "name": "John Doe",
+              "code": 12345,
+              "email": "student@example.com",
+              "resident": true,
+              "last": "2024-10-12T21:45:53.242814",
+              "active": true
+          }
+      ],
+      "message": "DATA_RETRIEVED_SUCCESSFULLY",
+      "status": 200
+  }
+  ```
+
+#### Get All Dinning Halls
+- **URL**: `GET /siral/dinninghalls`
+- **Description**: Retrieves all the dinning halls.
+- **Permissions**: Admin, Scheduler, Site Manager
+- **Response**:
+- `200 OK` with list of data if successful
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "id": 1,
+              "name": "Central"
+          },
+          {
+              "id": 2,
+              "name": "Camilitos"
+          }
+      ],
+      "message": "DATA_RETRIEVED_SUCCESSFULLY",
+      "status": 200
+  }
+  ```
+
+#### Get All Reservations
+- **URL**: `GET /siral/reservations`
+- **Description**: Retrieves all the reservations.
+- **Permissions**: Admin, Scheduler, Site Manager
+- **Response**:
+- `200 OK` with list of data if successful
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "id": 6,
+              "studentID": 1,
+              "scheduleItemID": 30,
+              "dateOfReservation": "2024-10-12T16:44:46.147406"
+          },
+          {
+              "id": 7,
+              "studentID": 1,
+              "scheduleItemID": 31,
+              "dateOfReservation": "2024-10-12T16:46:37.475581"
+          }
+      ],
+      "message": "DATA_RETRIEVED_SUCCESSFULLY",
+      "status": 200
+  }
+  ```
 
 ## Endpoints for Student Interface
 
@@ -419,6 +541,39 @@ Siral is the backend server for a meal reservation and management application. T
     }
     ```
 
+#### Get All Meals Available For a Date
+- **URL**: `GET /siral/schedule/{dinninghallID}/{date}`
+- **Description**: Retrieves all the meals for a date in a dinning hall that are available.
+- **Request Parameters**:
+  - `dinninghallID` (path parameter)
+  - `date` (path parameter)
+- **Response**:
+  - `200 OK` with schedule items if successful
+  - `400 Bad Request` if required fields are missing or date format is invalid
+    - `404 Not Found` if the dining hall is not found
+  ```json
+  {
+      "success": true,
+      "data": [
+          {
+              "id": 1,
+              "date": "2023-10-01",
+              "time": "breakfast",
+              "dinninghallID": 1,
+              "available": true 
+          },
+          {
+              "id": 2,
+              "date": "2023-10-01",
+              "time": "lunch",
+              "dinninghallID": 1,
+              "available": true 
+          } 
+      ],
+      "message": "DATA_RETREIVED_SUCCESSFULLY",
+      "status": 200
+  }
+  ```
 
 
 ## Server Efficiency

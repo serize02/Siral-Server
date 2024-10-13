@@ -101,7 +101,7 @@ fun Route.getStudentReservations(
             dataService.studentService.getStudentById(studentID)
                 ?: return@get call.respond(call.respond(HttpStatusCode.NotFound, Response(success = false, data = null, message = ResponseMessage.INVALID_STUDENT.name, status = 404)))
             val reservations = dataService.reservationService.getReservations(studentID)
-            return@get call.respond(HttpStatusCode.OK, Response(success = true, data = reservations, message = ResponseMessage.DATA_RETREIVED_SUCCESSFULLY.name, status = 200))
+            return@get call.respond(HttpStatusCode.OK, Response(success = true, data = reservations, message = ResponseMessage.DATA_RETRIEVED_SUCCESSFULLY.name, status = 200))
         }
     }
 }

@@ -9,5 +9,5 @@ data class Data(
     @Serializable(with = LocalDateSerializer::class)
     val date: LocalDate,
     val dinningHall: String,
-    val reservation: Long
+    val reservations: Long
 )

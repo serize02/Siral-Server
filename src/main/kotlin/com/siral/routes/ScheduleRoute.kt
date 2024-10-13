@@ -20,7 +20,7 @@ fun Route.getSchedule(dataService: DataService) {
         dataService.dinningHallService.getDinninghallByID(dinninghallID)
             ?: return@get call.respond(HttpStatusCode.NotFound, Response(success = false, data = null, message = ResponseMessage.DINNING_HALL_NOT_FOUND.name, status = 404))
         val items = dataService.scheduleService.getSchedule(dinninghallID)
-        return@get call.respond(HttpStatusCode.OK, Response(success = true, data = items, message = ResponseMessage.DATA_RETREIVED_SUCCESSFULLY.name, status = 200))
+        return@get call.respond(HttpStatusCode.OK, Response(success = true, data = items, message = ResponseMessage.DATA_RETRIEVED_SUCCESSFULLY.name, status = 200))
     }
 }
 
@@ -29,11 +29,15 @@ fun Route.getMealsForDate(dataService: DataService){
         call.withRole(listOf(UserRole.STUDENT.name)){
             val dinninghallID = call.parameters["dinninghallID"]?.toLong()
                 ?: return@get call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_REQUIRED_FIELDS.name, status = 404))
+
+            dataService.dinningHallService.getDinninghallByID(dinninghallID)
+                ?: return@get call.respond(HttpStatusCode.NotFound, Response(success = false, data = null, message = ResponseMessage.DINNING_HALL_NOT_FOUND.name, status = 404))
+
             try{
                 val date = call.parameters["date"]?.let { it1 -> LocalDate.parse(it1) }
                     ?: return@get call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.MISSING_REQUIRED_FIELDS.name, status = 404))
                 val meals = dataService.scheduleService.getAvailableItemsForDate(date, dinninghallID)
-                return@get call.respond(HttpStatusCode.OK, Response(success = true, data = meals, message = ResponseMessage.DATA_RETREIVED_SUCCESSFULLY.name, status = 200))
+                return@get call.respond(HttpStatusCode.OK, Response(success = true, data = meals, message = ResponseMessage.DATA_RETRIEVED_SUCCESSFULLY.name, status = 200))
             } catch (ex: Exception){
                 return@get call.respond(HttpStatusCode.BadRequest, Response(success = false, data = null, message = ResponseMessage.INVALID_DATE.name, status = 404))
             }

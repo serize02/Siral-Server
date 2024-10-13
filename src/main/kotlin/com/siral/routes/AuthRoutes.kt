@@ -59,7 +59,7 @@ fun Route.studentLogin(
             return@post call.respond(HttpStatusCode.OK, AuthResponse(
                 success = true,
                 data = student,
-                message = ResponseMessage.USER_LOGED_SUCCESSFULLY.name,
+                message = ResponseMessage.USER_LOGGED_SUCCESSFULLY.name,
                 status = 200,
                 role = UserRole.STUDENT.name,
                 token = token
@@ -116,7 +116,7 @@ fun Route.adminLogin(
                 return@post call.respond(HttpStatusCode.OK, AuthResponse(
                     success = true,
                     data = user,
-                    message = ResponseMessage.USER_LOGED_SUCCESSFULLY.name,
+                    message = ResponseMessage.USER_LOGGED_SUCCESSFULLY.name,
                     status = 200,
                     role = user.role,
                     token = token
@@ -147,7 +147,7 @@ fun Route.adminLogin(
         return@post call.respond(HttpStatusCode.OK, AuthResponse(
             success = true,
             data = null,
-            message = ResponseMessage.USER_LOGED_SUCCESSFULLY.name,
+            message = ResponseMessage.USER_LOGGED_SUCCESSFULLY.name,
             status = 200,
             role = UserRole.ADMIN.name,
             token = token
