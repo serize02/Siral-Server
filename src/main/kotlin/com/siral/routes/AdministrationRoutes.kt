@@ -1,6 +1,7 @@
 package com.siral.routes
 
 import com.siral.data.DataService
+import com.siral.plugins.withRole
 import com.siral.request.AuthCredentials
 import com.siral.request.CreateSiteManagerScheduler
 import com.siral.responses.AuthResponse
@@ -12,17 +13,21 @@ import com.siral.utils.*
 import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.application.call
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 
 fun Routing.administration(dataService: DataService, tokenService: TokenService, tokenConfig: TokenConfig
 ){
     route("/administration"){
-        get {
-//            call.withRole(Access.administration){
-                val personal = dataService.siteManagerSchedulerService.getAll()
-                return@get call.respond(HttpStatusCode.OK, Response(data = personal, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
-//            }
+
+        authenticate {
+            get {
+                call.withRole(Access.administration){
+                    val personal = dataService.siteManagerSchedulerService.getAll()
+                    return@get call.respond(HttpStatusCode.OK, Response(data = personal, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
+                }
+            }
         }
 
         get("/{id}") {
@@ -32,13 +37,15 @@ fun Routing.administration(dataService: DataService, tokenService: TokenService,
             return@get call.respond(HttpStatusCode.OK, Response(data = user, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
         }
 
-        post {
-//            call.withRole(Access.admin){
-                val data = call.receive<CreateSiteManagerScheduler>()
-                dataService.siteManagerSchedulerService.create(data)
-                val new = dataService.siteManagerSchedulerService.getByEmail(data.email)
-                return@post call.respond(HttpStatusCode.Created, Response(data = new, message = Messages.USER_CREATED_SUCCESSFULLY))
-//            }
+        authenticate {
+            post {
+                call.withRole(Access.admin){
+                    val data = call.receive<CreateSiteManagerScheduler>()
+                    dataService.siteManagerSchedulerService.create(data)
+                    val new = dataService.siteManagerSchedulerService.getByEmail(data.email)
+                    return@post call.respond(HttpStatusCode.Created, Response(data = new, message = Messages.USER_CREATED_SUCCESSFULLY))
+                }
+            }
         }
 
         post("/login") {
@@ -86,14 +93,16 @@ fun Routing.administration(dataService: DataService, tokenService: TokenService,
                 AuthResponse(data = null, message = Messages.USER_LOGGED_SUCCESSFULLY, role = null, token = token))
         }
 
-        delete("/{id}") {
-//            call.withRole(Access.admin){
-                val id = call.parameters["id"]?.toLong()
-                id?.let { dataService.siteManagerSchedulerService.getByID(id) }
-                    ?: return@delete call.respond(HttpStatusCode.NotFound, Response(success = false, data = null, message = Messages.USER_NOT_FOUND))
-                dataService.siteManagerSchedulerService.delete(id)
-                return@delete call.respond(HttpStatusCode.OK, Response(data = null, message = Messages.USER_DELETED_SUCCESSFULLY))
-//            }
+        authenticate {
+            delete("/{id}") {
+                call.withRole(Access.admin){
+                    val id = call.parameters["id"]?.toLong()
+                    id?.let { dataService.siteManagerSchedulerService.getByID(id) }
+                        ?: return@delete call.respond(HttpStatusCode.NotFound, Response(success = false, data = null, message = Messages.USER_NOT_FOUND))
+                    dataService.siteManagerSchedulerService.delete(id)
+                    return@delete call.respond(HttpStatusCode.OK, Response(data = null, message = Messages.USER_DELETED_SUCCESSFULLY))
+                }
+            }
         }
 
         get("/stats") {

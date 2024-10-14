@@ -12,6 +12,7 @@ import com.siral.utils.*
 import io.ktor.server.routing.*
 import io.ktor.server.application.*
 import io.ktor.http.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 
@@ -19,11 +20,14 @@ fun Routing.students(dataService: DataService, tokenConfig: TokenConfig, tokenSe
     route("/students"){
 
         // get all
-        get {
-//            call.withRole(Access.administration){
-                val students = dataService.studentService.getAll()
-                return@get call.respond(HttpStatusCode.OK, Response(data = students, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
-//            }
+
+        authenticate {
+            get {
+                call.withRole(Access.administration){
+                    val students = dataService.studentService.getAll()
+                    return@get call.respond(HttpStatusCode.OK, Response(data = students, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
+                }
+            }
         }
 
         // get by id

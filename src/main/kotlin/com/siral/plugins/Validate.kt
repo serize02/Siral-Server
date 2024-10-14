@@ -44,5 +44,10 @@ fun Application.configureValidation(){
                 ValidationResult.Invalid("Invalid Credentials")
             else ValidationResult.Valid
         }
+
+        validate<UpdateDaysBefore> { request ->
+            if (!listOf(2,7,15,30).contains(request.days)) ValidationResult.Invalid("Invalid days")
+            else ValidationResult.Valid
+        }
     }
 }

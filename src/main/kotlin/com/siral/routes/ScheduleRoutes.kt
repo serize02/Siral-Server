@@ -18,11 +18,9 @@ fun Routing.schedule(dataService: DataService){
     route("/schedule"){
 
         get {
-//            call.withRole(Access.administration){
-                val schedule = dataService.scheduleService.getAll()
-                return@get call.respond(HttpStatusCode.OK, Response(data = schedule, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
-//            }
-        }
+            val schedule = dataService.scheduleService.getAll()
+            return@get call.respond(HttpStatusCode.OK, Response(data = schedule, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
+      }
 
         get("/{id}") {
             val id = call.parameters["id"]?.toLong()
