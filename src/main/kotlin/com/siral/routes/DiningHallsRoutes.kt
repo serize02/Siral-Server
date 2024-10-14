@@ -30,14 +30,6 @@ fun Routing.dininghalls(dataService: DataService){
             return@get call.respond(HttpStatusCode.OK, Response(data = dininghall, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
         }
 
-        get("/{id}/meals") {
-            val id = call.parameters["id"]?.toLong()
-            val dininghall = id?.let { dataService.dinningHallService.getById(it) }
-                ?: return@get call.respond(HttpStatusCode.NotFound, Response(success = false, data = null, message = Messages.DININGHALL_NOT_FOUND))
-            val meals = dataService.scheduleService.getByDinningHall(id)
-            call.respond(HttpStatusCode.OK, Response(data = meals, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
-        }
-
         authenticate {
             post {
                 call.withRole(Access.admin){

@@ -11,6 +11,7 @@ data class Student(
     val code: Long,
     val email: String,
     val resident: Boolean,
+    val lastReservationId: Long? = null,
     @Serializable(with = LocalDateTimeSerializer::class)
     val last: LocalDateTime,
     val active: Boolean

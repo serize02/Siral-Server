@@ -2,6 +2,7 @@ package com.siral.routes
 
 import com.siral.data.DataService
 import com.siral.plugins.withRole
+import com.siral.request.AvailableMeals
 import com.siral.request.CreateReservation
 import com.siral.responses.Response
 import com.siral.utils.Access
@@ -32,9 +33,15 @@ fun Routing.reservations(dataService: DataService){
             return@get call.respond(HttpStatusCode.OK, Response(data = reservation, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
         }
 
+        get("/available") {
+            val data = call.receive<AvailableMeals>()
+            val meals = dataService.scheduleService.getAvailableItemsForDate(data.date, data.dininghallId)
+            return@get call.respond(HttpStatusCode.OK, Response(data = meals, message = Messages.DATA_RETRIEVED_SUCCESSFULLY))
+        }
+
         post {
             val data = call.receive<CreateReservation>()
-            dataService.reservationService.create(data.studentId, data.scheduleItemId)
+            dataService.reservationService.create(data.studentId, data.scheduleItemId).let { dataService.studentService.updateLastReservation(data.studentId, it) }
             val new = dataService.reservationService.getByScheduleItemIdAndUserId(data.studentId, data.scheduleItemId)
             return@post call.respond(HttpStatusCode.Created, Response(data = new, message = Messages.RESERVATION_CREATED_SUCCESSFULLY))
         }

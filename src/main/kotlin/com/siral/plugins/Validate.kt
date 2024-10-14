@@ -49,5 +49,12 @@ fun Application.configureValidation(){
             if (!listOf(2,7,15,30).contains(request.days)) ValidationResult.Invalid("Invalid days")
             else ValidationResult.Valid
         }
+
+        validate<AvailableMeals> { request ->
+            val dininghall = transaction { Dinninghalls.select { Dinninghalls.id  eq request.dininghallId}.count() > 0 }
+            if (!dininghall || request.date <= LocalDate.now())
+                ValidationResult.Invalid("Invalid data")
+            else ValidationResult.Valid
+        }
     }
 }

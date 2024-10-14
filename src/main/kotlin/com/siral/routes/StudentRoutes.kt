@@ -53,7 +53,7 @@ fun Routing.students(dataService: DataService, tokenConfig: TokenConfig, tokenSe
                     dataService.studentService.getById(it)
                 }
             student?.let {
-                it1 -> dataService.studentService.updateStudentLastAndActive(it1.id)
+                it1 -> dataService.studentService.updateLastAndActive(it1.id)
                 val token = tokenService.generateToken(
                     config = tokenConfig,
                     claims = arrayOf(TokenClaim(name = "userId", value = student.id.toString()), TokenClaim(name = "userRole", value = UserRole.STUDENT.name))

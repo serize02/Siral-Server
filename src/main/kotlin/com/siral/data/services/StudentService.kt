@@ -25,6 +25,7 @@ class StudentService(private val db: Database): StudentDataSource {
                     code = it[Students.code],
                     email = it[Students.email],
                     resident = it[Students.resident],
+                    lastReservationId = it[Students.lastReservationId],
                     last = it[Students.last],
                     active = it[Students.active]
                 )
@@ -41,6 +42,7 @@ class StudentService(private val db: Database): StudentDataSource {
                     code = it[Students.code],
                     email = it[Students.email],
                     resident = it[Students.resident],
+                    lastReservationId = it[Students.lastReservationId],
                     last = it[Students.last],
                     active = it[Students.active]
                 )
@@ -58,6 +60,7 @@ class StudentService(private val db: Database): StudentDataSource {
                     code = it[Students.code],
                     email = it[Students.email],
                     resident = it[Students.resident],
+                    lastReservationId = it[Students.lastReservationId],
                     last = it[Students.last],
                     active = it[Students.active]
                 )
@@ -75,11 +78,18 @@ class StudentService(private val db: Database): StudentDataSource {
             } get Students.id
     }
 
-    override suspend fun updateStudentLastAndActive(id: Long): Unit = dbQuery {
+    override suspend fun updateLastAndActive(id: Long): Unit = dbQuery {
         Students
             .update({ Students.id eq id }) {
                 it[last] = LocalDateTime.now()
                 it[active] = true
+            }
+    }
+
+    override suspend fun updateLastReservation(id: Long, reservationId: Long): Unit = dbQuery {
+        Students
+            .update( {Students.id eq id} ){
+                it[lastReservationId] = reservationId
             }
     }
 

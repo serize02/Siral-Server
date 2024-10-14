@@ -13,7 +13,9 @@ interface StudentDataSource {
 
     suspend fun create(student: StudentData): Long
 
-    suspend fun updateStudentLastAndActive(id: Long)
+    suspend fun updateLastAndActive(id: Long)
+
+    suspend fun updateLastReservation(id: Long, reservationId: Long)
 
     suspend fun delete(id: Long)
 

@@ -20,7 +20,6 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
 
-
     val dotenv = dotenv()
 
     val database = DatabaseFactory.init()
