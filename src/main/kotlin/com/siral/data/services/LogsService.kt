@@ -18,7 +18,7 @@ class LogsService(private val db: Database): LogsDataSource {
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    override suspend fun getLogs(): List<Log> = dbQuery {
+    override suspend fun getAll(): List<Log> = dbQuery {
         Logs
             .selectAll()
             .orderBy(Logs.timestamp, SortOrder.DESC)
@@ -33,7 +33,7 @@ class LogsService(private val db: Database): LogsDataSource {
             }
     }
 
-    override suspend fun addLog(email: String, action: Actions, status: Status): Unit = dbQuery {
+    override suspend fun create(email: String, action: Actions, status: Status): Unit = dbQuery {
         Logs
             .insert {
                 it[Logs.email] = email

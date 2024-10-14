@@ -3,9 +3,17 @@ package com.siral.data.interfaces
 import com.siral.data.models.DinningHall
 
 interface DinningHallDataSource {
-    suspend fun getDinninghallByID(dinninghallID: Long): DinningHall?
-    suspend fun insertDinninghall(dinninghallName: String)
-    suspend fun deleteDinninghall(dinninghallID: Long)
-    suspend fun getDinninghallByName(dinninghallName: String): DinningHall?
+
     suspend fun getAll(): List<DinningHall>
+
+    suspend fun getById(id: Long): DinningHall?
+
+    suspend fun getByName(name: String): DinningHall?
+
+    suspend fun create(name: String)
+
+    suspend fun update(id: Long, newName: String)
+
+    suspend fun delete(id: Long)
+
 }

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import java.time.LocalDate
 
 @Serializable
-data class ScheduleItemRequest(
+data class CreateScheduleItem(
     @Serializable(with = LocalDateSerializer::class)
     val date: LocalDate,
     val breakfast: Boolean,

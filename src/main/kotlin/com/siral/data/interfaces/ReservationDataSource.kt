@@ -4,10 +4,17 @@ import com.siral.data.models.Reservation
 
 
 interface ReservationDataSource {
-    suspend fun makeReservation(studentID: Long, scheduleItemId: Long): Long
-    suspend fun getReservationByScheduleItemIdAndUserId(studentID: Long, scheduleItemId: Long): Reservation?
-    suspend fun deleteReservation(reservationId: Long)
-    suspend fun getReservations(studentID: Long): List<Reservation>
-    suspend fun getReservationByID(reservationId: Long): Reservation?
+
     suspend fun getAll(): List<Reservation>
+
+    suspend fun getById(id: Long): Reservation?
+
+    suspend fun getByStudent(studentId: Long): List<Reservation>
+
+    suspend fun getByScheduleItemIdAndUserId(studentId: Long, scheduleItemId: Long): Reservation?
+
+    suspend fun create(studentId: Long, scheduleItemId: Long): Long
+
+    suspend fun delete(id: Long)
+
 }

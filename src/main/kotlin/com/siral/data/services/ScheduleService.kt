@@ -1,6 +1,5 @@
 package com.siral.data.services
 
-import com.siral.data.database.tables.Reservations
 import com.siral.data.database.tables.Schedule
 import com.siral.data.interfaces.ScheduleDataSource
 import com.siral.data.models.ScheduleItem
@@ -15,9 +14,23 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
     private suspend fun <T> dbQuery(block: suspend () -> T): T =
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
-    override suspend fun getScheduleItemById(scheduleItemId: Long): ScheduleItem? = dbQuery {
+    override suspend fun getAll(): List<ScheduleItem> = dbQuery {
         Schedule
-            .select { Schedule.id eq scheduleItemId }
+            .selectAll()
+            .map {
+                ScheduleItem(
+                    id = it[Schedule.id],
+                    date = it[Schedule.itemDate],
+                    time = it[Schedule.time],
+                    dinninghallId = it[Schedule.dinninghallId],
+                    available = it[Schedule.available]
+                )
+            }
+    }
+
+    override suspend fun getById(id: Long): ScheduleItem? = dbQuery {
+        Schedule
+            .select { Schedule.id eq id }
             .map {
                 ScheduleItem(
                     id = it[Schedule.id],
@@ -30,24 +43,10 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
             .singleOrNull()
     }
 
-    override suspend fun insertScheduleItem(date: LocalDate, time: String, dinninghallID: Long): Unit = dbQuery {
-        Schedule
-            .insert {
-                it[Schedule.itemDate] = date
-                it[Schedule.time] = time
-                it[Schedule.dinninghallId] = dinninghallID
-            }
-    }
-
-    override suspend fun deleteScheduleItem(date: LocalDate, time: String, dinninghallID: Long): Unit = dbQuery {
-        val item = getScheduleItem(date, time, dinninghallID)
-        if (item != null) Schedule.deleteWhere {id eq item.id}
-    }
-
-    override suspend fun getSchedule(dinninghallID: Long): List<ScheduleItem> = dbQuery {
+    override suspend fun getByDinningHall(dinninghallId: Long): List<ScheduleItem> = dbQuery {
         Schedule
             .select {
-                (Schedule.dinninghallId eq dinninghallID) and
+                (Schedule.dinninghallId eq dinninghallId) and
                         (Schedule.itemDate greaterEq LocalDate.now())
             }
             .map {
@@ -62,12 +61,12 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
 
     }
 
-    override suspend fun getScheduleItem(date: LocalDate, time: String, dinninghallID: Long): ScheduleItem? = dbQuery {
+    override suspend fun getAvailableItemsForDate(date: LocalDate, dinninghallId: Long): List<ScheduleItem> = dbQuery {
         Schedule
             .select {
-                (Schedule.itemDate eq date) and
-                        (Schedule.time eq time) and
-                        (Schedule.dinninghallId eq dinninghallID)
+                (Schedule.dinninghallId eq dinninghallId) and
+                        (Schedule.itemDate eq date) and
+                        (Schedule.available eq true)
             }
             .map {
                 ScheduleItem(
@@ -78,24 +77,19 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
                     available = it[Schedule.available]
                 )
             }
-            .singleOrNull()
     }
 
-    override suspend fun getAvailableItemsForDate(date: LocalDate, dinninghallID: Long): List<ScheduleItem> = dbQuery {
+    override suspend fun create(date: LocalDate, time: String, dinninghallId: Long): Unit = dbQuery {
         Schedule
-            .select {
-                (Schedule.dinninghallId eq dinninghallID) and
-                (Schedule.itemDate eq date) and
-                (Schedule.available eq true)
-            }
-            .map {
-                ScheduleItem(
-                    id = it[Schedule.id],
-                    date = it[Schedule.itemDate],
-                    time = it[Schedule.time],
-                    dinninghallId = it[Schedule.dinninghallId],
-                    available = it[Schedule.available]
-                )
+            .insert {
+                it[Schedule.itemDate] = date
+                it[Schedule.time] = time
+                it[Schedule.dinninghallId] = dinninghallId
             }
     }
+
+    override suspend fun delete(id: Long): Unit = dbQuery {
+        Schedule.deleteWhere { Schedule.id eq id }
+    }
+
 }

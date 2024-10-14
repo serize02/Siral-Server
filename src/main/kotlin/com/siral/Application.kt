@@ -20,6 +20,7 @@ fun main(args: Array<String>) {
 
 fun Application.module() {
 
+
     val dotenv = dotenv()
 
     val database = DatabaseFactory.init()
@@ -51,8 +52,8 @@ fun Application.module() {
     )
 
     configureSerialization()
+    configureValidation()
     configureSecurity(tokenConfig)
     configureRouting(dataService, tokenService, tokenConfig)
     configureMonitoring()
-
 }

@@ -1,11 +1,11 @@
 package com.siral.responses
 
+import com.siral.utils.Messages
 import kotlinx.serialization.Serializable
 
 @Serializable
 open class Response<T>(
-    val success: Boolean = false,
+    val success: Boolean = true,
     val data: T? = null,
-    val message: String,
-    val status: Int
+    val message: Messages,
 )

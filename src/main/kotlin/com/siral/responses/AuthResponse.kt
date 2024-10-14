@@ -1,13 +1,14 @@
 package com.siral.responses
 
+import com.siral.utils.Messages
+import com.siral.utils.UserRole
 import kotlinx.serialization.Serializable
 
 @Serializable
 class AuthResponse<T>(
-    val success: Boolean,
-    val data: T?,
-    val message: String,
-    val status: Int,
-    val role: String?,
+    val success: Boolean = true,
+    val data: T? = null,
+    val message: Messages,
+    val role: UserRole?,
     val token: String?,
 )
