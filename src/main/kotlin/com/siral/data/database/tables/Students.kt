@@ -7,13 +7,12 @@ import org.jetbrains.exposed.sql.javatime.datetime
 
 object Students: Table("students") {
     val id = long("id").autoIncrement()
-    val name = varchar("name", 64)
+    val name = text("name")
     val code = long("student_code")
-    val email = varchar("email", 32).uniqueIndex()
+    val email = text("email").uniqueIndex()
     val resident = bool("resident")
     val lastReservationId = long("last_reservation_id").references(Reservations.id).nullable()
     val last = datetime("last_action").defaultExpression(CurrentDateTime)
     val active = bool("active").defaultExpression(booleanLiteral(true))
-
     override val primaryKey = PrimaryKey(id)
 }

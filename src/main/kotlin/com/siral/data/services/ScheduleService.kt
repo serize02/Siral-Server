@@ -22,7 +22,7 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
                     id = it[Schedule.id],
                     date = it[Schedule.itemDate],
                     time = it[Schedule.time],
-                    dinninghallId = it[Schedule.dinninghallId],
+                    dinninghallId = it[Schedule.dininghallId],
                     available = it[Schedule.available]
                 )
             }
@@ -36,7 +36,7 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
                     id = it[Schedule.id],
                     date = it[Schedule.itemDate],
                     time = it[Schedule.time],
-                    dinninghallId = it[Schedule.dinninghallId],
+                    dinninghallId = it[Schedule.dininghallId],
                     available = it[Schedule.available]
                 )
             }
@@ -46,7 +46,7 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
     override suspend fun getByDinningHall(dinninghallId: Long): List<ScheduleItem> = dbQuery {
         Schedule
             .select {
-                (Schedule.dinninghallId eq dinninghallId) and
+                (Schedule.dininghallId eq dinninghallId) and
                         (Schedule.itemDate greaterEq LocalDate.now())
             }
             .map {
@@ -54,7 +54,7 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
                     id = it[Schedule.id],
                     date = it[Schedule.itemDate],
                     time = it[Schedule.time],
-                    dinninghallId = it[Schedule.dinninghallId],
+                    dinninghallId = it[Schedule.dininghallId],
                     available = it[Schedule.available]
                 )
             }
@@ -64,7 +64,7 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
     override suspend fun getAvailableItemsForDate(date: LocalDate, dinninghallId: Long): List<ScheduleItem> = dbQuery {
         Schedule
             .select {
-                (Schedule.dinninghallId eq dinninghallId) and
+                (Schedule.dininghallId eq dinninghallId) and
                         (Schedule.itemDate eq date) and
                         (Schedule.available eq true)
             }
@@ -73,7 +73,7 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
                     id = it[Schedule.id],
                     date = it[Schedule.itemDate],
                     time = it[Schedule.time],
-                    dinninghallId = it[Schedule.dinninghallId],
+                    dinninghallId = it[Schedule.dininghallId],
                     available = it[Schedule.available]
                 )
             }
@@ -84,7 +84,7 @@ class ScheduleService(private val db: Database): ScheduleDataSource {
             .insert {
                 it[Schedule.itemDate] = date
                 it[Schedule.time] = time
-                it[Schedule.dinninghallId] = dinninghallId
+                it[Schedule.dininghallId] = dinninghallId
             }
     }
 

@@ -2,7 +2,7 @@ package com.siral.data.services
 
 
 import com.siral.data.database.tables.*
-import com.siral.data.database.tables.Dinninghalls.id
+import com.siral.data.database.tables.Dininghalls.id
 import com.siral.data.models.DinningHall
 import com.siral.data.interfaces.DinningHallDataSource
 import kotlinx.coroutines.Dispatchers
@@ -16,53 +16,53 @@ class DinningHallService(private val db: Database): DinningHallDataSource {
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
     override suspend fun getAll(): List<DinningHall> = dbQuery {
-        Dinninghalls
+        Dininghalls
             .selectAll()
             .map {
                 DinningHall(
                     id = it[id],
-                    name = it[Dinninghalls.name]
+                    name = it[Dininghalls.name]
                 )
             }
     }
 
     override suspend fun getByName(name: String): DinningHall? = dbQuery {
-        Dinninghalls
-            .select { Dinninghalls.name eq name }
+        Dininghalls
+            .select { Dininghalls.name eq name }
             .map {
                 DinningHall(
                     id = it[id],
-                    name = it[Dinninghalls.name]
+                    name = it[Dininghalls.name]
                 )
             }
             .singleOrNull()
     }
 
     override suspend fun getById(id: Long): DinningHall? = dbQuery {
-        Dinninghalls
-            .select { Dinninghalls.id eq id }
+        Dininghalls
+            .select { Dininghalls.id eq id }
             .map {
                 DinningHall(
-                    id = it[Dinninghalls.id],
-                    name = it[Dinninghalls.name]
+                    id = it[Dininghalls.id],
+                    name = it[Dininghalls.name]
                 )
             }
             .singleOrNull()
     }
 
     override suspend fun create(name: String): Unit = dbQuery{
-        val id = Dinninghalls.insert { it[this.name] = name } get Dinninghalls.id
-        AvailabilityConfigs.insert { it[dinninghallId] = id }
+        val id = Dininghalls.insert { it[this.name] = name } get Dininghalls.id
+        AvailabilityConfigs.insert { it[dininghallId] = id }
     }
 
     override suspend fun update(id: Long, newName: String): Unit = dbQuery {
-        Dinninghalls
-            .update({Dinninghalls.id eq id}){
+        Dininghalls
+            .update({Dininghalls.id eq id}){
                 it[name] = newName
             }
     }
 
     override suspend fun delete(id: Long): Unit = dbQuery {
-        Dinninghalls.deleteWhere { this.id eq id }
+        Dininghalls.deleteWhere { this.id eq id }
     }
 }

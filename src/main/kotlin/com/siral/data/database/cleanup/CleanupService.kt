@@ -18,7 +18,7 @@ class CleanupService(): CleanupDataSource {
         newSuspendedTransaction(Dispatchers.IO) { block() }
 
     override suspend fun cleanExpiredReservations(): Unit = dbQuery {
-        Reservations.deleteWhere { Reservations.dateOfReservation lessEq LocalDate.now().atStartOfDay() }
+        Reservations.deleteWhere { Reservations.createdAt lessEq LocalDate.now().atStartOfDay() }
     }
 
     override suspend fun cleanOldLogs(): Unit = dbQuery {
@@ -40,10 +40,10 @@ class CleanupService(): CleanupDataSource {
     override suspend fun updateAvailableScheduleItems(): Unit = dbQuery {
         val config = AvailabilityConfigs
             .selectAll()
-            .associate { it[AvailabilityConfigs.dinninghallId] to it[AvailabilityConfigs.daysBefore] }
+            .associate { it[AvailabilityConfigs.dininghallId] to it[AvailabilityConfigs.daysBefore] }
         for((dinningHallId, daysBefore) in config) {
             Schedule
-                .update({ (Schedule.dinninghallId eq dinningHallId) and (Schedule.itemDate lessEq  LocalDate.now().plusDays(daysBefore.toLong())) }) {
+                .update({ (Schedule.dininghallId eq dinningHallId) and (Schedule.itemDate lessEq  LocalDate.now().plusDays(daysBefore.toLong())) }) {
                     it[available] = true
                 }
         }

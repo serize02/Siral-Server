@@ -9,6 +9,6 @@ class AuthResponse<T>(
     val success: Boolean = true,
     val data: T? = null,
     val message: Messages,
-    val role: UserRole?,
+    val role: String?,
     val token: String?,
 )

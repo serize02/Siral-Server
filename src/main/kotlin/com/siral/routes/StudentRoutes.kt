@@ -62,7 +62,7 @@ fun Routing.students(dataService: DataService, tokenConfig: TokenConfig, tokenSe
                 return@post call.respond(HttpStatusCode.OK, AuthResponse(
                     data = it1,
                     message = Messages.USER_LOGGED_SUCCESSFULLY,
-                    role = UserRole.STUDENT,
+                    role = UserRole.STUDENT.name,
                     token = token
                 ) )
             }

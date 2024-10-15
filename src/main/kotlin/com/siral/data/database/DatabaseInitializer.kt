@@ -10,7 +10,7 @@ object DatabaseInitializer {
         transaction(db) {
             SchemaUtils.run {
                 createMissingTablesAndColumns(
-                    Students, Dinninghalls, Schedule, Reservations, SiteManagerSchedulers, Logs, AvailabilityConfigs
+                    Students, Dininghalls, Schedule, Reservations, SiteManagerSchedulers, Logs, AvailabilityConfigs
                 )
             }
         }

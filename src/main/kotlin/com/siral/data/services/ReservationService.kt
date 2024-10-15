@@ -22,7 +22,7 @@ class ReservationService(private val db: Database): ReservationDataSource {
                     id = it[Reservations.id],
                     studentID = it[Reservations.studentID],
                     scheduleItemID = it[Reservations.scheduleItemId],
-                    dateOfReservation = it[Reservations.dateOfReservation]
+                    dateOfReservation = it[Reservations.createdAt]
                 )
             }
     }
@@ -35,7 +35,7 @@ class ReservationService(private val db: Database): ReservationDataSource {
                     id = it[Reservations.id],
                     studentID = it[Reservations.studentID],
                     scheduleItemID = it[Reservations.scheduleItemId],
-                    dateOfReservation = it[Reservations.dateOfReservation]
+                    dateOfReservation = it[Reservations.createdAt]
                 )
             }
             .singleOrNull()
@@ -49,7 +49,7 @@ class ReservationService(private val db: Database): ReservationDataSource {
                     id = it[Reservations.id],
                     studentID = it[Reservations.studentID],
                     scheduleItemID = it[Reservations.scheduleItemId],
-                    dateOfReservation = it[Reservations.dateOfReservation]
+                    dateOfReservation = it[Reservations.createdAt]
                 )
             }
             .toList()
@@ -66,7 +66,7 @@ class ReservationService(private val db: Database): ReservationDataSource {
                     id = it[Reservations.id],
                     studentID = it[Reservations.studentID],
                     scheduleItemID = it[Reservations.scheduleItemId],
-                    dateOfReservation = it[Reservations.dateOfReservation]
+                    dateOfReservation = it[Reservations.createdAt]
                 )
             }
             .singleOrNull()

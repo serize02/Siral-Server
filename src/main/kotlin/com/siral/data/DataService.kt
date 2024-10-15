@@ -38,8 +38,8 @@ class DataService(db: Database): VerifyDataSource {
     }
 
     override suspend fun verifyExistentDinninghall(dinninghallName: String): Boolean = dbQuery {
-        Dinninghalls
-            .select { Dinninghalls.name eq dinninghallName }
+        Dininghalls
+            .select { Dininghalls.name eq dinninghallName }
             .count() > 0
     }
 
@@ -50,17 +50,17 @@ class DataService(db: Database): VerifyDataSource {
         for(i in 1..30){
             val date = today.plusDays(i.toLong())
             dbQuery {
-                Dinninghalls.selectAll().forEach { dinninghall ->
-                    val dinninghallName = dinninghall[Dinninghalls.name]
+                Dininghalls.selectAll().forEach { dininghall ->
+                    val dininghallName = dininghall[Dininghalls.name]
                     val count = Reservations
                         .innerJoin(Schedule)
                         .select {
-                            (Schedule.dinninghallId eq dinninghall[Dinninghalls.id]) and
-                            (Reservations.dateOfReservation greaterEq date.atStartOfDay()) and
-                            (Reservations.dateOfReservation lessEq date.plusDays(1).atStartOfDay())
+                            (Schedule.dininghallId eq dininghall[Dininghalls.id]) and
+                            (Reservations.createdAt greaterEq date.atStartOfDay()) and
+                            (Reservations.createdAt lessEq date.plusDays(1).atStartOfDay())
                         }
                         .count()
-                    result.add(Data(date, dinninghallName, count))
+                    result.add(Data(date, dininghallName, count))
                 }
             }
         }

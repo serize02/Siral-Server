@@ -19,7 +19,7 @@ fun Application.configureValidation(){
         }
 
         validate<CreateDiningHall> { request ->
-            val count = transaction { Dinninghalls.select { Dinninghalls.name eq request.name }.count() }
+            val count = transaction { Dininghalls.select { Dininghalls.name eq request.name }.count() }
             if (count > 0) ValidationResult.Invalid("This name is already taken")
             else ValidationResult.Valid
         }
@@ -39,7 +39,7 @@ fun Application.configureValidation(){
 
         validate<CreateSiteManagerScheduler> { request ->
             val email = transaction { SiteManagerSchedulers.select { SiteManagerSchedulers.email eq request.email }.count() > 0 }
-            val dininghall = transaction { Dinninghalls.select { Dinninghalls.id  eq request.dininghallId}.count() > 0 }
+            val dininghall = transaction { Dininghalls.select { Dininghalls.id  eq request.dininghallId}.count() > 0 }
             if (!request.email.endsWith("@uclv.cu") || email || !dininghall || !(listOf(UserRole.SCHEDULER.name, UserRole.SITE_MANAGER.name).contains(request.role)))
                 ValidationResult.Invalid("Invalid Credentials")
             else ValidationResult.Valid
@@ -51,7 +51,7 @@ fun Application.configureValidation(){
         }
 
         validate<AvailableMeals> { request ->
-            val dininghall = transaction { Dinninghalls.select { Dinninghalls.id  eq request.dininghallId}.count() > 0 }
+            val dininghall = transaction { Dininghalls.select { Dininghalls.id  eq request.dininghallId}.count() > 0 }
             if (!dininghall || request.date <= LocalDate.now())
                 ValidationResult.Invalid("Invalid data")
             else ValidationResult.Valid

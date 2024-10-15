@@ -75,7 +75,7 @@ fun Routing.administration(dataService: DataService, tokenService: TokenService,
 
                 return@post call.respond(
                     HttpStatusCode.OK,
-                    AuthResponse(data = user, message = Messages.USER_LOGGED_SUCCESSFULLY, role = null, token = token))
+                    AuthResponse(data = user, message = Messages.USER_LOGGED_SUCCESSFULLY, role = user.role, token = token))
             }
 
             val token = tokenService.generateToken(
@@ -88,9 +88,11 @@ fun Routing.administration(dataService: DataService, tokenService: TokenService,
                 )
             )
 
+            dataService.logsService.create(credentials.email, Actions.LOGIN, Status.SUCCESSFUL)
+
             return@post call.respond(
                 HttpStatusCode.OK,
-                AuthResponse(data = null, message = Messages.USER_LOGGED_SUCCESSFULLY, role = null, token = token))
+                AuthResponse(data = null, message = Messages.USER_LOGGED_SUCCESSFULLY, role = UserRole.ADMIN.name, token = token))
         }
 
         authenticate {

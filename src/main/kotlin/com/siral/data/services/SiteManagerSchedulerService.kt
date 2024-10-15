@@ -22,7 +22,7 @@ class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedule
                 SiteManagerScheduler(
                     id = it[SiteManagerSchedulers.id],
                     email = it[SiteManagerSchedulers.email],
-                    dinninghallID = it[SiteManagerSchedulers.dinninghallID],
+                    dinninghallID = it[SiteManagerSchedulers.dininghallID],
                     role = it[SiteManagerSchedulers.role]
                 )
             }
@@ -35,7 +35,7 @@ class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedule
                 SiteManagerScheduler(
                     id = it[SiteManagerSchedulers.id],
                     email = it[SiteManagerSchedulers.email],
-                    dinninghallID = it[SiteManagerSchedulers.dinninghallID],
+                    dinninghallID = it[SiteManagerSchedulers.dininghallID],
                     role = it[SiteManagerSchedulers.role]
                 )
             }
@@ -49,7 +49,7 @@ class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedule
                 SiteManagerScheduler(
                     id = it[SiteManagerSchedulers.id],
                     email = it[SiteManagerSchedulers.email],
-                    dinninghallID = it[SiteManagerSchedulers.dinninghallID],
+                    dinninghallID = it[SiteManagerSchedulers.dininghallID],
                     role = it[SiteManagerSchedulers.role]
                 )
             }
@@ -60,7 +60,7 @@ class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedule
         SiteManagerSchedulers
             .insert {
                 it[email] = credentials.email
-                it[dinninghallID] = credentials.dininghallId
+                it[dininghallID] = credentials.dininghallId
                 it[role] = credentials.role
             }
     }
@@ -72,7 +72,7 @@ class SiteManagerSchedulerService(private val db: Database): SiteManagerSchedule
 
     override suspend fun updateDaysBeforeReservation(dinninghallId: Long, days: Int): Unit = dbQuery {
         AvailabilityConfigs
-            .update({ AvailabilityConfigs.dinninghallId eq dinninghallId }) {
+            .update({ AvailabilityConfigs.dininghallId eq dinninghallId }) {
                 it[daysBefore] = days
             }
     }
