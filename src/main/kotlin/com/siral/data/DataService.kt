@@ -7,6 +7,7 @@ import com.siral.data.services.*
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.time.LocalDate
 
 class DataService(db: Database): VerifyDataSource {
 
@@ -45,10 +46,10 @@ class DataService(db: Database): VerifyDataSource {
 
     suspend fun getStatsData(): List<Data> {
         val result = mutableListOf<Data>()
-        val today = java.time.LocalDate.now()
+        val date = LocalDate.of(LocalDate.now().year, LocalDate.now().month, 1)
 
         for(i in 1..30){
-            val date = today.plusDays(i.toLong())
+            val day = date.plusDays(i.toLong())
             dbQuery {
                 Dininghalls.selectAll().forEach { dininghall ->
                     val dininghallName = dininghall[Dininghalls.name]
@@ -56,11 +57,11 @@ class DataService(db: Database): VerifyDataSource {
                         .innerJoin(Schedule)
                         .select {
                             (Schedule.dininghallId eq dininghall[Dininghalls.id]) and
-                            (Reservations.createdAt greaterEq date.atStartOfDay()) and
-                            (Reservations.createdAt lessEq date.plusDays(1).atStartOfDay())
+                            (Schedule.itemDate eq day) and
+                            (Reservations.scheduleItemId eq Schedule.id)
                         }
                         .count()
-                    result.add(Data(date, dininghallName, count))
+                    result.add(Data(day, dininghallName, count))
                 }
             }
         }
