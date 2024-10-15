@@ -43,7 +43,7 @@ fun Routing.dininghalls(dataService: DataService){
 
         authenticate {
             put("/{id}") {
-                call.withRole(Access.siteManagers){
+                call.withRole(Access.admin){
                     val id = call.parameters["id"]?.toLong()
                     id?.let { dataService.dinningHallService.getById(it) }
                         ?: return@put call.respond(HttpStatusCode.NotFound, Response(success = false, data = null, message = Messages.DININGHALL_NOT_FOUND))

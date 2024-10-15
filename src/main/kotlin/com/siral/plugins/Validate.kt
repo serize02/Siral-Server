@@ -25,7 +25,8 @@ fun Application.configureValidation(){
         }
 
         validate<CreateScheduleItem> { request ->
-            if (request.date <= LocalDate.now()) ValidationResult.Invalid("Invalid day")
+            val dininghall = transaction { Dininghalls.select { Dininghalls.id  eq request.dininghallId}.count() > 0 }
+            if (request.date <= LocalDate.now() || !dininghall) ValidationResult.Invalid("Invalid day or dininghall")
             else ValidationResult.Valid
         }
 

@@ -6,6 +6,7 @@ import java.time.LocalDate
 
 @Serializable
 data class CreateScheduleItem(
+    val dininghallId: Long,
     @Serializable(with = LocalDateSerializer::class)
     val date: LocalDate,
     val breakfast: Boolean,

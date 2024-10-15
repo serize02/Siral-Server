@@ -10,7 +10,6 @@ import io.ktor.http.*
 import io.ktor.server.routing.*
 import io.ktor.server.application.call
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 
@@ -33,9 +32,7 @@ fun Routing.schedule(dataService: DataService){
             post {
                 call.withRole(Access.schedulers){
                     val data = call.receive<CreateScheduleItem>()
-                    val dininghallId = call.principal<JWTPrincipal>()?.getClaim("userId", Long::class)?.let { it1 ->
-                        dataService.siteManagerSchedulerService.getByID(it1)?.dinninghallID
-                    } ?: return@post call.respond(HttpStatusCode.NotFound, Response(false, data = null, message = Messages.DININGHALL_NOT_FOUND))
+                    val dininghallId = data.dininghallId
                     if (data.breakfast)
                         dataService.scheduleService.create(data.date, "breakfast", dininghallId)
                     if (data.lunch)
